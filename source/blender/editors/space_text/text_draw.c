@@ -1565,13 +1565,28 @@ static void draw_brackets(const SpaceText *st, const TextDrawContext *tdc, ARegi
 
 /*********************** main region drawing *************************/
 
-TextDrawContext *tdc_cb = NULL;
+
+struct Closure_draw_text_main {
+  SpaceText *st;
+  ARegion *region;
+  TextDrawContext *tdc;
+};
+
+struct Closure_draw_text_main closure;
 
 void cb(int i, char *str)
 {
   // left, bottom
-  text_font_draw(tdc_cb, 100, 20 * i, str);
+  SpaceText *st = closure.st;
+  
+  ARegion *region = closure.region;
+  TextDrawContext *tdc = closure.tdc;
+
+  short top = region->sizey;
+
+  text_font_draw(tdc, 100, top - 20 * i, str);
 }
+
 
 void draw_text_main(SpaceText *st, ARegion *region)
 {
@@ -1749,14 +1764,17 @@ void draw_text_main(SpaceText *st, ARegion *region)
 
   
   snprintf(str, sizeof(str), "rand() = %d, duk = %f", rand(), duknum);
-
   text_font_draw(&tdc, 20, 20, str);
 
   snprintf(str, sizeof(str), "dukstr = %s", dukstr);
   text_font_draw(&tdc, 20, 50, str);
 
+  snprintf(str, sizeof(str), "region> winx=%d winy=%d sizex=%d sizey=%d", region->winx, region->winy, region->sizex, region->sizey);
+  text_font_draw(&tdc, 200, 200, str);
 
-  tdc_cb = &tdc;
+  closure.st = st;
+  closure.region = region;
+  closure.tdc = &tdc;
   text_duktape_lines_each(cb);
 
   text_font_end(&tdc);
