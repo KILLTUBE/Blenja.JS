@@ -48,6 +48,9 @@
 #include "text_format.h"
 #include "text_intern.h"
 
+#include "duktape.h"
+#include "text_duktape.h"
+
 /******************** text font drawing ******************/
 
 typedef struct TextDrawContext {
@@ -1562,6 +1565,14 @@ static void draw_brackets(const SpaceText *st, const TextDrawContext *tdc, ARegi
 
 /*********************** main region drawing *************************/
 
+TextDrawContext *tdc_cb = NULL;
+
+void cb(int i, char *str)
+{
+  // left, bottom
+  text_font_draw(tdc_cb, 100, 20 * i, str);
+}
+
 void draw_text_main(SpaceText *st, ARegion *region)
 {
   TextDrawContext tdc = {0};
@@ -1720,8 +1731,37 @@ void draw_text_main(SpaceText *st, ARegion *region)
   /* draw_documentation(st, region); - No longer supported */
   draw_suggestion_list(st, &tdc, region);
 
+  char str[128];
+
+  if (ctx == NULL) {
+    text_duktape_init();
+  }
+
+
+  duk_eval_string(ctx, "1 + Math.random()");
+  float duknum = duk_get_number(ctx, -1);
+
+  
+  const char *dukstr = NULL;
+  duk_get_global_string(ctx, "lines");
+  dukstr = duk_to_string(ctx, -1);
+  duk_pop(ctx); // pop string or undefined
+
+  
+  snprintf(str, sizeof(str), "rand() = %d, duk = %f", rand(), duknum);
+
+  text_font_draw(&tdc, 20, 20, str);
+
+  snprintf(str, sizeof(str), "dukstr = %s", dukstr);
+  text_font_draw(&tdc, 20, 50, str);
+
+
+  tdc_cb = &tdc;
+  text_duktape_lines_each(cb);
+
   text_font_end(&tdc);
 }
+
 
 /************************** update ***************************/
 

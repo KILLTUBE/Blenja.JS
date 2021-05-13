@@ -796,6 +796,8 @@ static int text_run_script(bContext *C, ReportList *reports)
   return OPERATOR_CANCELLED;
 }
 
+#include "text_duktape.h"
+
 static int text_run_script_exec(bContext *C, wmOperator *op)
 {
 #ifndef WITH_PYTHON
@@ -805,7 +807,14 @@ static int text_run_script_exec(bContext *C, wmOperator *op)
 
   return OPERATOR_CANCELLED;
 #else
-  return text_run_script(C, op->reports);
+  Text *text = CTX_data_edit_text(C);
+  char *buf = txt_to_buf(text, NULL);
+  printf("got text: %s\n", buf);
+  text_duktape_eval(buf);
+
+  MEM_freeN(buf);
+  return OPERATOR_FINISHED;
+  //return text_run_script(C, op->reports);
 #endif
 }
 

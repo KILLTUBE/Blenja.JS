@@ -27,6 +27,7 @@ set(INC
   ../../windowmanager
   ../../../../intern/glew-mx
   ../../../../intern/guardedalloc
+  ../../../../extern/duktape
 )
 
 
@@ -43,14 +44,17 @@ set(SRC
   text_header.c
   text_ops.c
   text_undo.c
+  text_duktape.c
 
   text_format.h
   text_intern.h
+  text_duktape.h
 )
 
 set(LIB
   bf_blenkernel
   bf_blenlib
+  extern_duktape
 )
 
 
