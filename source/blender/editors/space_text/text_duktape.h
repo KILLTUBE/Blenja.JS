@@ -20,6 +20,7 @@ int jsfunc_get_global(duk_context* ctx);
 int js_printf(char* msg, ...);
 void js_reload();
 int jsfunc_reload(duk_context *ctx);
+int jsfunc_include(duk_context* ctx);
 int jsfunc_exe(duk_context *ctx);
 int jsfunc_exedir(duk_context *ctx);
 

@@ -60,6 +60,8 @@ void text_duktape_init() {
   js_add_function("file_put_contents", jsfunc_file_put_contents, 2);
   js_add_function("exe"              , jsfunc_exe              , 0);
   js_add_function("exedir"           , jsfunc_exedir           , 0);
+  js_add_function("reload"           , jsfunc_reload           , 0);
+  js_add_function("include"          , jsfunc_include          , 1);
   // Reload (files)
   js_reload();
 }
@@ -96,7 +98,7 @@ int js_eval_file_safe(char *filename) {
     }
     else { // [..., file_contents]
 
-      printf("GOT CONTENT %s\n", duk_safe_to_string(ctx, -1));
+      //printf("GOT CONTENT %s\n", duk_safe_to_string(ctx, -1));
    // I would rather not use safeeval javascript code, but the pcompile/pcall fails to give me a full error stack print when lib.js contains parsing errors
    // Oh well, I just forgot to check the return value of duk_pcompile()
 #if 0
@@ -232,7 +234,7 @@ int jsfunc_file_get_contents(duk_context *ctx) {
 	// convert the fixed buffer to string
 	//ret = (char *) duk_to_string(ctx, -1);
   ret = (char*)duk_buffer_to_string(ctx, -1);
-	printf("ret=%s\n", ret); // would print the file contents
+	//printf("ret=%s\n", ret); // would print the file contents
 	return 1;
 	
 	fileerror:
@@ -279,8 +281,10 @@ void js_reload() {
   duk_pop(ctx);
   js_printf("JS root: %s\n", exedir);
   char filename[512];
-  sprintf(filename, "%s\\src_duktape\\Console.js", exedir);
+  sprintf(filename, "%s\\src_duktape\\init.js", exedir);
   js_eval_file_safe(filename);
+  //sprintf(filename, "%s\\src_duktape\\Console.js", exedir);
+  //js_eval_file_safe(filename);
   //js_eval_file_safe("assets\\javascript\\pre_create.js");
   //js_eval_file_safe("./javascript/init.js");
   //js_eval_file_safe("F:\\repos\\OpenDF2\\OpenDF2\\codemp\\javascript\\printf.js");
@@ -293,9 +297,15 @@ int jsfunc_reload(duk_context *ctx) {
   return 0;
 }
 
+int jsfunc_include(duk_context *ctx) {
+  char *filename = (char *) duk_to_string(ctx, 0);
+  js_eval_file_safe(filename);
+  return 0;
+}
+
 #include <Windows.h>
 
-int jsfunc_exe(duk_context* ctx) {
+int jsfunc_exe(duk_context *ctx) {
 #ifdef _WIN32
   char exedir[MAX_PATH];
   HMODULE hModule;
@@ -311,7 +321,7 @@ int jsfunc_exe(duk_context* ctx) {
   return 1;
 }
 
-int jsfunc_exedir(duk_context* ctx) {
+int jsfunc_exedir(duk_context *ctx) {
 #ifdef _WIN32
   char exedir[MAX_PATH];
   HMODULE hModule;
