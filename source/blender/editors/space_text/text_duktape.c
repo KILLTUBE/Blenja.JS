@@ -1,7 +1,13 @@
 #include "text_duktape.h"
 
+#include <D:\web\quickjspp\quickjs.h>
+
+// Duktape
 duk_context *ctx = NULL;
 void *lines = NULL;
+// QuickJS
+JSRuntime* quickjs_runtime;
+JSContext* quickjs_ctx;
 
 duk_bool_t js_push_global_by_name(char *name) {
   duk_bool_t exists;
@@ -41,8 +47,37 @@ void js_add_function(char *name, duk_c_function func, duk_idx_t nargs) {
   duk_put_global_string(ctx, name);      // [...                           ]
 }
 
+JSValue quickjs_log(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  int i;
+  const char *str;
+  size_t len;
+  // #########################
+  for (i = 0; i < argc; i++) {
+    if (i != 0) {
+      putchar(' ');
+    }
+    str = JS_ToCStringLen(ctx, &len, argv[i]);
+    if (!str) {
+      return JS_EXCEPTION;
+    }
+    fwrite(str, 1, len, stdout);
+    JS_FreeCString(ctx, str);
+  }
+  putchar('\n');
+  return JS_UNDEFINED;
+}
+
+/**
+ * \brief
+ * This function can be called multiple times, but only the first call initializes the engines
+ */
+/// <summary>whatever</summary>
 void text_duktape_init() {
-  // Allow to call this function multiple times
+  // QuickJS variables
+  JSValue global_obj;
+  //JSValue console;
+  JSValue log;
+  // #########################
   if (ctx != NULL) {
     return;
   }
@@ -66,12 +101,26 @@ void text_duktape_init() {
   js_add_function("JS_NewRuntime", jsfunc_JS_NewRuntime, 0);
   js_add_function("JS_NewContext", jsfunc_JS_NewContext, 1);
   js_add_function("JS_Eval", jsfunc_JS_Eval, 2);
-  
-
-
-
   // Reload (files)
   js_reload();
+
+  // Init QuickJS aswell
+  quickjs_runtime = JS_NewRuntime();
+  quickjs_ctx = JS_NewContext(quickjs_runtime);
+  //JSClassID test_id;
+  //JSClassDef test_class;
+  //JS_NewClassID(&test_id);
+  //JS_NewClass(quickjs_runtime, test_id, &test_class);
+
+  // Nice example: D:\web\quickjspp\quickjs\libc.c
+
+  log = JS_NewCFunction(quickjs_ctx, quickjs_log, "log", 0);
+  global_obj = JS_GetGlobalObject(quickjs_ctx);
+  //console = JS_NewObject(quickjs_ctx);
+  //JS_SetPropertyStr(quickjs_ctx, console, "log", log);
+  //JS_SetPropertyStr(quickjs_ctx, global_obj, "console", console);
+  JS_SetPropertyStr(quickjs_ctx, global_obj, "log", log);
+  JS_FreeValue(quickjs_ctx, global_obj);
 }
 
 void text_duktape_lines_each(text_duktape_lines_each_callback cb) {
@@ -356,8 +405,6 @@ int jsfunc_exedir(duk_context *ctx) {
 
 // QuickJS api
 
-#include <D:\web\quickjspp\quickjs.h>
-
 int jsfunc_JS_NewRuntime(duk_context *ctx) {
   JSRuntime *rt = JS_NewRuntime();
   duk_push_pointer(ctx, rt);
@@ -374,11 +421,16 @@ int jsfunc_JS_NewContext(duk_context *ctx) {
 int jsfunc_JS_Eval(duk_context *ctx) {
   const char *str;
   JSValue ret;
+  JSValue retloop;
   JSContext *ctx_quickjs;
   JSValue strForTag;
   JSValue exception;
   char defaultMessage[256];
   int tag;
+  int tagloop;
+  int success;
+  uint32_t i;
+  int64_t n;
   duk_idx_t objectIndex;
   duk_idx_t arrayIndex;
   // #########################
@@ -419,25 +471,76 @@ int jsfunc_JS_Eval(duk_context *ctx) {
         objectIndex = duk_push_object(ctx);
         duk_push_string(ctx, "value");
         duk_put_prop_string(ctx, objectIndex, "key");
-        return 1;
       }
       else if (JS_IsArray(ctx_quickjs, ret)) {
         arrayIndex = duk_push_array(ctx);
-        duk_push_string(ctx, "First");
-        duk_put_prop_index(ctx, arrayIndex, 0);
-        duk_push_string(ctx, "Second");
-        duk_put_prop_index(ctx, arrayIndex, 1);
-        duk_push_string(ctx, "Third");
-        duk_put_prop_index(ctx, arrayIndex, 2);
-        return 1;
+        success = JS_GetPropertyLength(ctx_quickjs, &n, ret);
+        if (success == 0) {
+          for (i=0; i<n; i++) {
+            retloop = JS_GetPropertyUint32(ctx_quickjs, ret, i);
+            tagloop = JS_VALUE_GET_TAG(retloop);
+            switch (tagloop) {
+              case JS_TAG_FLOAT64:
+                duk_push_number(ctx, JS_VALUE_GET_FLOAT64(retloop));
+                break;
+              case JS_TAG_STRING:
+                str = JS_ToCString(ctx_quickjs, retloop);
+                duk_push_string(ctx, str);
+                JS_FreeCString(ctx_quickjs, str);
+                break;
+              case JS_TAG_INT:
+                duk_push_int(ctx, JS_VALUE_GET_INT(retloop));
+                break;
+              case JS_TAG_UNDEFINED:
+                duk_push_undefined(ctx);
+                break;
+              case JS_TAG_NULL:
+                duk_push_null(ctx);
+                break;
+              case JS_TAG_BOOL:
+                duk_push_boolean(ctx, JS_VALUE_GET_BOOL(ret));
+                break;
+            }
+            duk_put_prop_index(ctx, arrayIndex, i);
+            JS_FreeValue(ctx_quickjs, retloop);
+          } // for
+        }
+        else {
+          duk_push_string(ctx, "Can't get .length property");
+        }
+      }
+      else if (JS_IsFunction(ctx_quickjs, ret)) {
+        str = JS_ToCString(ctx_quickjs, ret);
+        duk_push_string(ctx, str);
+        JS_FreeCString(ctx_quickjs, str);
       }
       else {
         duk_push_string(ctx, "unknown JS_TAG_OBJECT (neither array nor object)");
-        return 1;
+        
       }
+      return 1;
     default:
       snprintf(defaultMessage, sizeof(defaultMessage), "jsfunc_JS_Eval: unhandled tag=%d", tag);
       duk_push_string(ctx, defaultMessage);
       return 1;
   }
+}
+
+void quickjs_eval(char *str) {
+  const char *tostr;
+  JSValue ret;
+  JSValue exception;
+  // #########################
+  ret = JS_Eval(quickjs_ctx, str, strlen(str), "<quickjs_eval>", 0 /*flags*/);
+  if (JS_IsException(ret)) {
+    exception = JS_GetException(quickjs_ctx);
+    tostr = JS_ToCString(quickjs_ctx, exception);
+    printf("quickjs_eval exception> %s\n", tostr);
+    JS_FreeCString(quickjs_ctx, tostr);
+    JS_FreeValue(quickjs_ctx, exception);
+    return;
+  }
+  tostr = JS_ToCString(quickjs_ctx, ret);
+  printf("quickjs_eval> %s\n", tostr);
+  JS_FreeCString(quickjs_ctx, tostr);
 }

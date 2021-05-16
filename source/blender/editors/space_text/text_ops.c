@@ -810,7 +810,8 @@ static int text_run_script_exec(bContext *C, wmOperator *op)
   Text *text = CTX_data_edit_text(C);
   char *buf = txt_to_buf(text, NULL);
   //printf("got text: %s\n", buf);
-  text_duktape_eval(buf);
+  //text_duktape_eval(buf);
+  quickjs_eval(buf);
   MEM_freeN(buf);
   // Update editor window
   WM_event_add_notifier(C, NC_TEXT | NA_EDITED, text);

@@ -27,4 +27,5 @@ int jsfunc_exedir(duk_context *ctx);
 int jsfunc_JS_NewRuntime(duk_context *ctx);
 int jsfunc_JS_NewContext(duk_context *ctx);
 int jsfunc_JS_Eval(duk_context *ctx);
+void quickjs_eval(char *buf);
 #endif
