@@ -62,6 +62,14 @@ void text_duktape_init() {
   js_add_function("exedir"           , jsfunc_exedir           , 0);
   js_add_function("reload"           , jsfunc_reload           , 0);
   js_add_function("include"          , jsfunc_include          , 1);
+  // QuickJS
+  js_add_function("JS_NewRuntime", jsfunc_JS_NewRuntime, 0);
+  js_add_function("JS_NewContext", jsfunc_JS_NewContext, 1);
+  js_add_function("JS_Eval", jsfunc_JS_Eval, 2);
+  
+
+
+
   // Reload (files)
   js_reload();
 }
@@ -344,4 +352,92 @@ int jsfunc_exedir(duk_context *ctx) {
   duk_push_string(ctx, ".");
 #endif
   return 1;
+}
+
+// QuickJS api
+
+#include <D:\web\quickjspp\quickjs.h>
+
+int jsfunc_JS_NewRuntime(duk_context *ctx) {
+  JSRuntime *rt = JS_NewRuntime();
+  duk_push_pointer(ctx, rt);
+  return 1;
+}
+
+int jsfunc_JS_NewContext(duk_context *ctx) {
+  JSRuntime *rt = (JSRuntime *) duk_to_pointer(ctx, 0);
+  JSContext *ctx_quickjs = JS_NewContext(rt);
+  duk_push_pointer(ctx, ctx_quickjs);
+  return 1;
+}
+
+int jsfunc_JS_Eval(duk_context *ctx) {
+  const char *str;
+  JSValue ret;
+  JSContext *ctx_quickjs;
+  JSValue strForTag;
+  JSValue exception;
+  char defaultMessage[256];
+  int tag;
+  duk_idx_t objectIndex;
+  duk_idx_t arrayIndex;
+  // #########################
+  ctx_quickjs = (JSContext *) duk_to_pointer(ctx, 0);
+  str = duk_to_string(ctx, 1);
+  ret = JS_Eval(ctx_quickjs, str, strlen(str), "<evalScript>", 0 /*flags*/);
+  tag = JS_VALUE_GET_TAG(ret);
+  switch (tag) {
+    case JS_TAG_FLOAT64:
+      duk_push_number(ctx, JS_VALUE_GET_FLOAT64(ret));
+      return 1;
+    case JS_TAG_INT:
+      duk_push_int(ctx, JS_VALUE_GET_INT(ret));
+      return 1;
+    case JS_TAG_STRING:
+      str = JS_ToCString(ctx_quickjs, ret);
+      duk_push_string(ctx, str);
+      JS_FreeCString(ctx_quickjs, str);
+      return 1;
+    case JS_TAG_NULL:
+      duk_push_null(ctx);
+      return 1;
+    case JS_TAG_UNDEFINED:
+      duk_push_undefined(ctx);
+      return 1;
+    case JS_TAG_BOOL:
+      duk_push_boolean(ctx, JS_VALUE_GET_BOOL(ret));
+      return 1;
+    case JS_TAG_EXCEPTION:
+      exception = JS_GetException(ctx_quickjs);
+      str = JS_ToCString(ctx_quickjs, exception);
+      duk_push_string(ctx, str);
+      JS_FreeCString(ctx_quickjs, str);
+      JS_FreeValue(ctx_quickjs, exception);
+      return 1;
+    case JS_TAG_OBJECT:
+      if (JS_IsObjectPlain(ctx_quickjs, ret)) {
+        objectIndex = duk_push_object(ctx);
+        duk_push_string(ctx, "value");
+        duk_put_prop_string(ctx, objectIndex, "key");
+        return 1;
+      }
+      else if (JS_IsArray(ctx_quickjs, ret)) {
+        arrayIndex = duk_push_array(ctx);
+        duk_push_string(ctx, "First");
+        duk_put_prop_index(ctx, arrayIndex, 0);
+        duk_push_string(ctx, "Second");
+        duk_put_prop_index(ctx, arrayIndex, 1);
+        duk_push_string(ctx, "Third");
+        duk_put_prop_index(ctx, arrayIndex, 2);
+        return 1;
+      }
+      else {
+        duk_push_string(ctx, "unknown JS_TAG_OBJECT (neither array nor object)");
+        return 1;
+      }
+    default:
+      snprintf(defaultMessage, sizeof(defaultMessage), "jsfunc_JS_Eval: unhandled tag=%d", tag);
+      duk_push_string(ctx, defaultMessage);
+      return 1;
+  }
 }

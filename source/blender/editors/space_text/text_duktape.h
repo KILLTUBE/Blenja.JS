@@ -23,5 +23,8 @@ int jsfunc_reload(duk_context *ctx);
 int jsfunc_include(duk_context* ctx);
 int jsfunc_exe(duk_context *ctx);
 int jsfunc_exedir(duk_context *ctx);
-
+// QuickJS
+int jsfunc_JS_NewRuntime(duk_context *ctx);
+int jsfunc_JS_NewContext(duk_context *ctx);
+int jsfunc_JS_Eval(duk_context *ctx);
 #endif

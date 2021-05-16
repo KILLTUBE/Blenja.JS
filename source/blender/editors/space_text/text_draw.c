@@ -1576,6 +1576,8 @@ struct Closure_draw_text_main closure;
 
 void cb(int i, char *str)
 {
+  short center;
+  // #########################
   // left, bottom
   SpaceText *st = closure.st;
   
@@ -1583,8 +1585,10 @@ void cb(int i, char *str)
   TextDrawContext *tdc = closure.tdc;
 
   short top = region->sizey;
-
-  text_font_draw(tdc, 100, top - 20 * i, str);
+  // Start under the menu bar
+  top -= 50;
+  center = region->sizex / 2;
+  text_font_draw(tdc, center, top - 20 * i, str);
 }
 
 
