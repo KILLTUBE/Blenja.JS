@@ -8,6 +8,7 @@ void *lines = NULL;
 // QuickJS
 JSRuntime *quickjs_runtime;
 JSContext *quickjs_ctx;
+JSValue quickjs_lines;
 
 duk_bool_t js_push_global_by_name(char *name) {
   duk_bool_t exists;
@@ -130,18 +131,25 @@ void text_duktape_init() {
 
   // Nice example: D:\web\quickjspp\quickjs\libc.c
 
-  log = JS_NewCFunction(quickjs_ctx, quickjs_log, "log", 0);
   global_obj = JS_GetGlobalObject(quickjs_ctx);
+
+  log = JS_NewCFunction(quickjs_ctx, quickjs_log, "log", 0);
   //console = JS_NewObject(quickjs_ctx);
   //JS_SetPropertyStr(quickjs_ctx, console, "log", log);
   //JS_SetPropertyStr(quickjs_ctx, global_obj, "console", console);
   JS_SetPropertyStr(quickjs_ctx, global_obj, "log", log);
-  JS_FreeValue(quickjs_ctx, global_obj);
+
+  quickjs_lines = JS_NewArray(quickjs_ctx);
+  JS_SetPropertyStr(quickjs_ctx, global_obj, "lines", quickjs_lines);
 
   quickjs_add_function("include"          , quickjsfunc_include          , 1);
   quickjs_add_function("file_get_contents", quickjsfunc_file_get_contents, 1);
   quickjs_add_function("exe"              , quickjsfunc_exe              , 0);
   quickjs_add_function("exedir"           , quickjsfunc_exedir           , 0);
+
+  JS_FreeValue(quickjs_ctx, global_obj);
+
+
 }
 
 void text_duktape_lines_each(text_duktape_lines_each_callback cb) {
@@ -156,6 +164,22 @@ void text_duktape_lines_each(text_duktape_lines_each_callback cb) {
     str = duk_to_string(ctx, -1);
     cb(i, str);
     duk_pop(ctx);
+  }
+}
+
+void quickjs_lines_each(text_duktape_lines_each_callback cb) {
+  int32_t i;
+  int64_t n;
+  const char *str;
+  JSValue line;
+  // #########################
+  JS_GetPropertyLength(quickjs_ctx, &n, quickjs_lines);
+  for (i=0; i<n; i++) {
+    line = JS_GetPropertyUint32(quickjs_ctx, quickjs_lines, i);
+    str = JS_ToCString(quickjs_ctx, line);
+    cb(i, str);
+    JS_FreeCString(quickjs_ctx, str);
+    JS_FreeValue(quickjs_ctx, line);
   }
 }
 

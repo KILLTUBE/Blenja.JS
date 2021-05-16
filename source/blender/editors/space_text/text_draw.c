@@ -1574,19 +1574,19 @@ struct Closure_draw_text_main {
 
 struct Closure_draw_text_main closure;
 
-void cb(int i, char *str)
-{
+void cb(int i, char *str) {
   short center;
+  short top;
+  SpaceText *st;
+  ARegion *region;
+  TextDrawContext *tdc;
   // #########################
-  // left, bottom
-  SpaceText *st = closure.st;
-  
-  ARegion *region = closure.region;
-  TextDrawContext *tdc = closure.tdc;
-
-  short top = region->sizey;
-  // Start under the menu bar
-  top -= 50;
+  st     = closure.st;
+  region = closure.region;
+  tdc    = closure.tdc;
+  // #########################
+  top = region->sizey;
+  top -= 50; // Start under the menu bar
   center = region->sizex / 2;
   text_font_draw(tdc, center, top - 20 * i, str);
 }
@@ -1779,7 +1779,8 @@ void draw_text_main(SpaceText *st, ARegion *region)
   closure.st = st;
   closure.region = region;
   closure.tdc = &tdc;
-  text_duktape_lines_each(cb);
+  //text_duktape_lines_each(cb);
+  quickjs_lines_each(cb);
 
   text_font_end(&tdc);
 }
