@@ -265,3 +265,5 @@ ForEachMacros:
 
 StatementMacros:
   - PyObject_VAR_HEAD
+
+PointerAlignment: Right

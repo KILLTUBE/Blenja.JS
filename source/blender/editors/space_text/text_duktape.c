@@ -6,8 +6,8 @@
 duk_context *ctx = NULL;
 void *lines = NULL;
 // QuickJS
-JSRuntime* quickjs_runtime;
-JSContext* quickjs_ctx;
+JSRuntime *quickjs_runtime;
+JSContext *quickjs_ctx;
 
 duk_bool_t js_push_global_by_name(char *name) {
   duk_bool_t exists;
@@ -67,6 +67,22 @@ JSValue quickjs_log(JSContext *ctx, JSValueConst this_val, int argc, JSValueCons
   return JS_UNDEFINED;
 }
 
+
+JSValue quickjsfunc_include          (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_file_get_contents(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_exe              (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_exedir           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+
+void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
+  JSValue global;
+  JSValue func;
+  // #########################
+  global = JS_GetGlobalObject(quickjs_ctx);
+  func = JS_NewCFunction(quickjs_ctx, funcPtr, name, length);
+  JS_SetPropertyStr(quickjs_ctx, global, name, func);
+  JS_FreeValue(quickjs_ctx, global);
+}
+
 /**
  * \brief
  * This function can be called multiple times, but only the first call initializes the engines
@@ -121,6 +137,11 @@ void text_duktape_init() {
   //JS_SetPropertyStr(quickjs_ctx, global_obj, "console", console);
   JS_SetPropertyStr(quickjs_ctx, global_obj, "log", log);
   JS_FreeValue(quickjs_ctx, global_obj);
+
+  quickjs_add_function("include"          , quickjsfunc_include          , 1);
+  quickjs_add_function("file_get_contents", quickjsfunc_file_get_contents, 1);
+  quickjs_add_function("exe"              , quickjsfunc_exe              , 0);
+  quickjs_add_function("exedir"           , quickjsfunc_exedir           , 0);
 }
 
 void text_duktape_lines_each(text_duktape_lines_each_callback cb) {
@@ -543,4 +564,146 @@ void quickjs_eval(char *str) {
   tostr = JS_ToCString(quickjs_ctx, ret);
   printf("quickjs_eval> %s\n", tostr);
   JS_FreeCString(quickjs_ctx, tostr);
+}
+
+uint8_t *js_load_file(JSContext *ctx, size_t *pbuf_len, const char *filename) {
+  FILE *f;
+  uint8_t *buf;
+  size_t buf_len;
+  long lret;
+  // #########################
+  f = fopen(filename, "rb");
+  if (!f) {
+    return NULL;
+  }
+  if (fseek(f, 0, SEEK_END) < 0) {
+    goto fail;
+  }
+  lret = ftell(f);
+  if (lret < 0) {
+    goto fail;
+  }
+  /* XXX: on Linux, ftell() return LONG_MAX for directories */
+  if (lret == LONG_MAX) {
+    errno = EISDIR;
+    goto fail;
+  }
+  buf_len = lret;
+  if (fseek(f, 0, SEEK_SET) < 0) {
+    goto fail;
+  }
+  if (ctx) {
+    buf = js_malloc(ctx, buf_len + 1);
+  } else {
+    buf = malloc(buf_len + 1);
+  }
+  if (!buf) {
+    goto fail;
+  }
+  if (fread(buf, 1, buf_len, f) != buf_len) {
+    errno = EIO;
+    if (ctx) {
+      js_free(ctx, buf);
+    } else {
+      free(buf);
+    }
+  fail:
+    fclose(f);
+    return NULL;
+  }
+  buf[buf_len] = '\0';
+  fclose(f);
+  *pbuf_len = buf_len;
+  return buf;
+}
+
+/* load and evaluate a file */
+JSValue quickjsfunc_include(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  uint8_t *buf;
+  const char *filename;
+  JSValue ret;
+  size_t buf_len;
+  // #########################
+  filename = JS_ToCString(ctx, argv[0]);
+  if (!filename) {
+    return JS_EXCEPTION;
+  }
+  buf = js_load_file(ctx, &buf_len, filename);
+  if (!buf) {
+    JS_ThrowReferenceError(ctx, "could not load '%s'", filename);
+    JS_FreeCString(ctx, filename);
+    return JS_EXCEPTION;
+  }
+  ret = JS_Eval(ctx, (char *)buf, buf_len, filename, JS_EVAL_TYPE_GLOBAL);
+  js_free(ctx, buf);
+  JS_FreeCString(ctx, filename);
+  return ret;
+}
+
+
+/* load and evaluate a file */
+JSValue quickjsfunc_file_get_contents(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  uint8_t *buf;
+  const char *filename;
+  JSValue ret;
+  size_t buf_len;
+  // #########################
+  filename = JS_ToCString(ctx, argv[0]);
+  if (!filename) {
+    return JS_EXCEPTION;
+  }
+  buf = js_load_file(ctx, &buf_len, filename);
+  if (!buf) {
+    JS_ThrowReferenceError(ctx, "could not load '%s'", filename);
+    JS_FreeCString(ctx, filename);
+    return JS_EXCEPTION;
+  }
+  ret = JS_NewStringLen(ctx, (char *)buf, buf_len);
+  js_free(ctx, buf);
+  JS_FreeCString(ctx, filename);
+  return ret;
+}
+
+JSValue quickjsfunc_exe(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  JSValue ret;
+  // #########################
+#ifdef _WIN32
+  char path[MAX_PATH];
+  HMODULE hModule;
+  // #########################
+  // When NULL is passed to GetModuleHandle, the handle of the exe itself is returned
+  hModule = GetModuleHandle(NULL);
+  GetModuleFileName(hModule, path, sizeof(path));
+  ret = JS_NewString(quickjs_ctx, path);
+#else
+  ret = JS_NewString(quickjs_ctx, "todo");
+#endif
+  return ret;
+}
+
+JSValue quickjsfunc_exedir(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  JSValue ret;
+  // #########################
+#ifdef _WIN32
+  char path[MAX_PATH];
+  HMODULE hModule;
+  int i;
+  int n;
+  // #########################
+  // When NULL is passed to GetModuleHandle, the handle of the exe itself is returned
+  hModule = GetModuleHandle(NULL);
+  GetModuleFileName(hModule, path, sizeof(path));
+  n = strlen(path);
+  for (i=n; i>=0; i--) {
+    if (path[i] == '\\') {
+      path[i] = 0;
+      break;
+    }
+  }
+  ret = JS_NewString(quickjs_ctx, path);
+#else
+  // todo for linux server
+  ret = JS_NewString(quickjs_ctx, "todo");
+#endif
+  return ret;
 }
