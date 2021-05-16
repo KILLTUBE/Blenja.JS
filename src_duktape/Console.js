@@ -1,4 +1,4 @@
-Console = function() {
+function Console() {
 	// nothing
 }
 
