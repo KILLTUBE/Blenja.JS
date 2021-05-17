@@ -1217,7 +1217,10 @@ JSValue  js_debugger_local_variables(JSContext *ctx, int stack_index);
 
 #endif
 
-void*    js_debugger_get_object_id(JSValue val);
+void *js_debugger_get_object_id(JSValue val);
+
+// kungfooman: those are useful but were static functions (and now they are public)
+JSValue js_array_push(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv, int unshift);
 
 #undef js_unlikely
 #undef js_force_inline

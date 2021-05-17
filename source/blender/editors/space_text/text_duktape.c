@@ -1,6 +1,6 @@
 #include "text_duktape.h"
 
-#include <D:\web\quickjspp\quickjs.h>
+#include <quickjs.h>
 
 // Duktape
 duk_context *ctx = NULL;
@@ -8,7 +8,6 @@ void *lines = NULL;
 // QuickJS
 JSRuntime *quickjs_runtime;
 JSContext *quickjs_ctx;
-JSValue quickjs_lines;
 
 duk_bool_t js_push_global_by_name(char *name) {
   duk_bool_t exists;
@@ -95,6 +94,7 @@ void text_duktape_init() {
   JSValue global_obj;
   //JSValue console;
   JSValue log;
+  JSValue quickjs_lines;
   // #########################
   if (ctx != NULL) {
     return;
@@ -175,15 +175,28 @@ void quickjs_lines_each(text_duktape_lines_each_callback cb) {
   int64_t n;
   const char *str;
   JSValue line;
+  JSValue lines;
+  JSValue global;
+  int ret;
   // #########################
-  JS_GetPropertyLength(quickjs_ctx, &n, quickjs_lines);
+  global = JS_GetGlobalObject(quickjs_ctx);
+  lines = JS_GetPropertyStr(quickjs_ctx, global, "lines");
+  ret = JS_GetPropertyLength(quickjs_ctx, &n, lines);
+  if (ret < 0) {
+    cb(0, "Exception getting lines.length");
+    JS_FreeValue(quickjs_ctx, lines);
+    JS_FreeValue(quickjs_ctx, global);
+    return;
+  }
   for (i=0; i<n; i++) {
-    line = JS_GetPropertyUint32(quickjs_ctx, quickjs_lines, i);
+    line = JS_GetPropertyUint32(quickjs_ctx, lines, i);
     str = JS_ToCString(quickjs_ctx, line);
     cb(i, str);
     JS_FreeCString(quickjs_ctx, str);
     JS_FreeValue(quickjs_ctx, line);
   }
+  JS_FreeValue(quickjs_ctx, lines);
+  JS_FreeValue(quickjs_ctx, global);
 }
 
 int js_eval_file_safe(char *filename) {
@@ -610,6 +623,8 @@ void quickjs_eval(char *str) {
   const char *tostr;
   JSValue ret;
   JSValue exception;
+  JSValue global;
+  JSValue lines;
   // #########################
   ret = JS_Eval(quickjs_ctx, str, strlen(str), "<quickjs_eval>", 0 /*flags*/);
   if (JS_IsException(ret)) {
@@ -623,6 +638,14 @@ void quickjs_eval(char *str) {
   tostr = JS_ToCString(quickjs_ctx, ret);
   printf("quickjs_eval> %s\n", tostr);
   JS_FreeCString(quickjs_ctx, tostr);
+
+  
+  global = JS_GetGlobalObject(quickjs_ctx);
+  lines = JS_GetPropertyStr(quickjs_ctx, global, "lines");
+  // JSValue js_array_push(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv, int unshift);
+  js_array_push(quickjs_ctx, lines, 1, &ret, 0);
+  JS_FreeValue(quickjs_ctx, global);
+  JS_FreeValue(quickjs_ctx, lines);
 }
 
 uint8_t *js_load_file(JSContext *ctx, size_t *pbuf_len, const char *filename) {

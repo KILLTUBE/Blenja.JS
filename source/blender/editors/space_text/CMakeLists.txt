@@ -28,6 +28,7 @@ set(INC
   ../../../../intern/glew-mx
   ../../../../intern/guardedalloc
   ../../../../extern/duktape
+  ../../../../extern/quickjs
 )
 
 
