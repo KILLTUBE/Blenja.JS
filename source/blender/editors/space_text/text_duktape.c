@@ -73,6 +73,7 @@ JSValue quickjsfunc_include          (JSContext *ctx, JSValueConst this_val, int
 JSValue quickjsfunc_file_get_contents(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_exe              (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_exedir           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_reload           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 
 void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
   JSValue global;
@@ -146,10 +147,12 @@ void text_duktape_init() {
   quickjs_add_function("file_get_contents", quickjsfunc_file_get_contents, 1);
   quickjs_add_function("exe"              , quickjsfunc_exe              , 0);
   quickjs_add_function("exedir"           , quickjsfunc_exedir           , 0);
+  quickjs_add_function("reload"           , quickjsfunc_reload           , 0);
 
   JS_FreeValue(quickjs_ctx, global_obj);
 
-
+  // Reload (files)
+  quickjs_reload();
 }
 
 void text_duktape_lines_each(text_duktape_lines_each_callback cb) {
@@ -377,21 +380,53 @@ int js_printf(char *msg, ...) {
 }
 
 void js_reload() {
+  char *exedir;
+  char filename[512];
+  // #########################
   duk_push_c_function(ctx, jsfunc_exedir, 0);
   duk_pcall(ctx, 0);
-  char *exedir = duk_safe_to_string(ctx, -1);
+  exedir = duk_safe_to_string(ctx, -1);
   duk_pop(ctx);
-  js_printf("JS root: %s\n", exedir);
-  char filename[512];
+  js_printf("js_reload> exedir=\"%s\"\n", exedir);
   sprintf(filename, "%s\\src_duktape\\init.js", exedir);
   js_eval_file_safe(filename);
-  //sprintf(filename, "%s\\src_duktape\\Console.js", exedir);
-  //js_eval_file_safe(filename);
-  //js_eval_file_safe("assets\\javascript\\pre_create.js");
-  //js_eval_file_safe("./javascript/init.js");
-  //js_eval_file_safe("F:\\repos\\OpenDF2\\OpenDF2\\codemp\\javascript\\printf.js");
-  //js_eval_file_safe("assets\\javascript\\lib_quake.js");
   //js_call("PostReload", "");
+}
+
+void quickjs_reload() {
+  JSValue ret;
+  JSValue exception;
+  JSValue func;
+  JSValue jsFilename;
+  JSValue includeRet;
+  const char *path;
+  const char *str;
+  char filename[512];
+  // #########################
+  func = JS_NewCFunction(quickjs_ctx, quickjsfunc_exedir, "exedir", 0);
+  ret = JS_Call(quickjs_ctx, func, JS_UNDEFINED, 0, NULL);
+  if (JS_IsException(ret)) {
+    //js_std_dump_error(ctx);
+    exception = JS_GetException(quickjs_ctx);
+    str = JS_ToCString(quickjs_ctx, exception);
+    duk_push_string(ctx, str);
+    printf("quickjs_reload> exception=\"%s\"\n", str);
+    JS_FreeCString(quickjs_ctx, str);
+    JS_FreeValue(quickjs_ctx, exception);
+    return;
+  }
+  path = JS_ToCString(quickjs_ctx, ret);
+  sprintf(filename, "%s\\src_duktape\\init.js", path);
+  //js_printf("quickjs_reload> path=\"%s\"\n", path);
+  //js_printf("quickjs_reload> filename=\"%s\"\n", filename);
+  jsFilename = JS_NewString(quickjs_ctx, filename);
+  includeRet = quickjsfunc_include(quickjs_ctx, JS_UNDEFINED, 1, &jsFilename);
+  JS_FreeValue(quickjs_ctx, ret);
+  JS_FreeValue(quickjs_ctx, func);
+  JS_FreeValue(quickjs_ctx, jsFilename);
+  JS_FreeValue(quickjs_ctx, includeRet);
+  JS_FreeCString(quickjs_ctx, path);
+  //quickjs_call("PostReload", "");
 }
 
 int jsfunc_reload(duk_context *ctx) {
@@ -730,4 +765,9 @@ JSValue quickjsfunc_exedir(JSContext *ctx, JSValueConst this_val, int argc, JSVa
   ret = JS_NewString(quickjs_ctx, "todo");
 #endif
   return ret;
+}
+
+JSValue quickjsfunc_reload(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  quickjs_reload();
+  return JS_UNDEFINED;
 }
