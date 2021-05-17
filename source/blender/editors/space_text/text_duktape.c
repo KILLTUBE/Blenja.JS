@@ -4,13 +4,13 @@
 
 // Duktape
 duk_context *ctx = NULL;
-void *lines = NULL;
+void *lines      = NULL;
 // QuickJS
-JSRuntime *quickjs_runtime;
-JSContext *quickjs_ctx;
+JSRuntime *quickjs_runtime = NULL;
+JSContext *quickjs_ctx     = NULL;
 
 duk_bool_t js_push_global_by_name(char *name) {
-  duk_bool_t exists;
+  duk_bool_t exists = 0;
   // #########################
 	duk_push_global_object(ctx);                 // [..., global                   ]
 	exists = duk_get_prop_string(ctx, -1, name); // [..., global, prop || undefined]
@@ -48,9 +48,9 @@ void js_add_function(char *name, duk_c_function func, duk_idx_t nargs) {
 }
 
 JSValue quickjs_log(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
-  int i;
-  const char *str;
-  size_t len;
+  const char *str = NULL;
+  int i           = 0;
+  size_t len      = 0;
   // #########################
   for (i = 0; i < argc; i++) {
     if (i != 0) {
@@ -75,8 +75,8 @@ JSValue quickjsfunc_exedir           (JSContext *ctx, JSValueConst this_val, int
 JSValue quickjsfunc_reload           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 
 void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
-  JSValue global;
-  JSValue func;
+  JSValue global = 0;
+  JSValue func   = 0;
   // #########################
   global = JS_GetGlobalObject(quickjs_ctx);
   func = JS_NewCFunction(quickjs_ctx, funcPtr, name, length);
@@ -91,10 +91,10 @@ void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
 /// <summary>whatever</summary>
 void text_duktape_init() {
   // QuickJS variables
-  JSValue global_obj;
-  //JSValue console;
-  JSValue log;
-  JSValue quickjs_lines;
+  JSValue global_obj    = 0;
+  JSValue log           = 0;
+  JSValue quickjs_lines = 0;
+  //JSValue console = 0;
   // #########################
   if (ctx != NULL) {
     return;
@@ -156,9 +156,9 @@ void text_duktape_init() {
 }
 
 void text_duktape_lines_each(text_duktape_lines_each_callback cb) {
-  duk_idx_t i;
-  duk_idx_t n;
-  const char *str;
+  const char *str = NULL;
+  duk_idx_t i     = 0;
+  duk_idx_t n     = 0;
   // #########################
   duk_push_heapptr(ctx, lines);
   n = duk_get_length(ctx, -1);
@@ -171,13 +171,13 @@ void text_duktape_lines_each(text_duktape_lines_each_callback cb) {
 }
 
 void quickjs_lines_each(text_duktape_lines_each_callback cb) {
-  int32_t i;
-  int64_t n;
-  const char *str;
-  JSValue line;
-  JSValue lines;
-  JSValue global;
-  int ret;
+  const char *str = NULL;
+  int32_t i       = 0;
+  int64_t n       = 0;
+  JSValue line    = 0;
+  JSValue lines   = 0;
+  JSValue global  = 0;
+  int ret         = 0;
   // #########################
   global = JS_GetGlobalObject(quickjs_ctx);
   lines = JS_GetPropertyStr(quickjs_ctx, global, "lines");
@@ -200,14 +200,18 @@ void quickjs_lines_each(text_duktape_lines_each_callback cb) {
 }
 
 int js_eval_file_safe(char *filename) {
+  int function_exists = 0;
+  int rc              = 0;
+  int ret             = 0;
+  // #########################
   // [..., file_get_contents || undefined]
-  int function_exists = js_push_global_by_name("file_get_contents");
+  function_exists = js_push_global_by_name("file_get_contents");
   if (function_exists) { // [..., file_get_contents]
     // [..., file_get_contents, filename]
     duk_push_string(ctx, filename);
     // [..., ret]
     // file_get_contents(name)
-    int rc = duk_pcall(ctx, 1);
+    rc = duk_pcall(ctx, 1);
     if (rc != 0) { // [..., undefined]
       // e.g. Callback failed: TypeError: undefined not callable
       js_printf("js> duk_eval_file_safe(%s) failed: %s\n", filename, duk_safe_to_string(ctx, -1));
@@ -224,7 +228,7 @@ int js_eval_file_safe(char *filename) {
       duk_push_global_object(ctx);
       //duk_push_int(ctx, (int) widget);
       duk_dup(ctx, -3);
-      int ret = duk_pcall(ctx, 2);
+      ret = duk_pcall(ctx, 2);
       if (ret != 0) {
         Sys_Printf("safeeval failed on C level: %s\n", duk_safe_to_string(ctx, -1));
       }
@@ -233,7 +237,7 @@ int js_eval_file_safe(char *filename) {
   // [..., file_contents, filename]
       duk_push_string(ctx, filename);
       // [..., function || err]
-      int ret = duk_pcompile(ctx, 0 /*DUK_COMPILE_SAFE | DUK_COMPILE_EVAL*/); // didn't see any difference in error reporting lol
+      ret = duk_pcompile(ctx, 0 /*DUK_COMPILE_SAFE | DUK_COMPILE_EVAL*/); // didn't see any difference in error reporting lol
 
       if (ret != 0) {
         js_printf("js> duk_eval_file_safe(%s) duk_pcompile failed: %s\n", filename, duk_safe_to_string(ctx, -1));
@@ -241,7 +245,7 @@ int js_eval_file_safe(char *filename) {
       else {
 
         // [..., ret]
-        int ret = duk_pcall(ctx, 0);
+        ret = duk_pcall(ctx, 0);
         if (ret != 0) {
           // I just cannot get the whole stack trace error :(
           //duk_get_prop_string(ctx, -1, "stack");
@@ -267,31 +271,37 @@ int js_eval_file_safe(char *filename) {
 
 // e.g. js_call("callback_call", "iiii", callback_id, widget, x, y);
 int js_call(char *function, char *params, ...) {
-	// prepare stack
+  char *stringTemp            = NULL;
+  va_list args                = 0;
+  int len                     = 0;
+  int ret                     = 0;
+  int intTemp                 = 0;
+  int i                       = 0;
+  int numberOfPushedArguments = 0;
+  float floatTemp             = 0;
+  // #########################
+	// Prepare stack
 	js_push_global_by_name(function);
-	// push all vars to the stack
-	va_list args;
+	// Push all vars to the stack
 	va_start(args, params);
-	int len = strlen(params);
-	int i;
-	int numberOfPushedArguments = 0;
+	len = strlen(params);
 	for (i=0; i<len; i++) {
 		switch (params[i]) {
 			case 'i': {
-				int tmp = va_arg(args, int);
-				duk_push_int(ctx, tmp);
+				intTemp = va_arg(args, int);
+				duk_push_int(ctx, intTemp);
 				numberOfPushedArguments++;
 				break;
 			}
 			case 'f': {
-				float tmp = va_arg(args, float);
-				duk_push_number(ctx, tmp);
+				floatTemp = va_arg(args, float);
+				duk_push_number(ctx, floatTemp);
 				numberOfPushedArguments++;
 				break;
 			}
 			case 's': {
-				char *tmp = va_arg(args, char *);
-				duk_push_string(ctx, tmp);
+				stringTemp = va_arg(args, char *);
+				duk_push_string(ctx, stringTemp);
 				numberOfPushedArguments++;
 				break;
 			}
@@ -299,8 +309,8 @@ int js_call(char *function, char *params, ...) {
 				js_printf("script> WARNING: Identifier '%c' is not implemented!\n", params[i]);
 		}
 	}
-	// call the function
-	int ret = duk_pcall(ctx, numberOfPushedArguments);
+	// Call the function
+	ret = duk_pcall(ctx, numberOfPushedArguments);
 	if (ret != 0) {
 		//js_printf("script> call of \"%s\" failed: %s\n", function, duk_safe_to_string(ctx, -1));
 		//printf("script> call of \"%s\" failed: %s\n", function, duk_safe_to_string(ctx, -1));
@@ -310,51 +320,49 @@ int js_call(char *function, char *params, ...) {
 		//func_ret = duk_to_int(ctx, -1);
 		//Sys_Printf("call back call success i guess\n");
 	}
-	// either case, stack needs to be cleaned
+	// Either case, stack needs to be cleaned
 	duk_pop(ctx);
 	return 1;
 }
 
 int jsfunc_file_get_contents(duk_context *ctx) {
-	const char *filename = duk_to_string(ctx, 0);
-	FILE *f = NULL;
-	long len;
-	void *buf;
-	size_t got;
-	char *ret = NULL;
+  const char *filename = NULL;
+	const char *ret      = NULL;
+	FILE *f              = NULL;
+	void *buf            = NULL;
+	long len             = 0;
+	size_t got           = 0;
+  // #########################
+	filename = duk_to_string(ctx, 0);
 	if (!filename) {
 		goto fileerror;
 	}
 	f = fopen(filename, "rb");
 	if (!f) {
-		//js_printf("Cant open file: %s\n", filename);
-		//printf("cant open file: %s", filename);
+		js_printf("jsfunc_file_get_contents> Can't open file: %s\n", filename);
 		goto fileerror;
 	}
 	if (fseek(f, 0, SEEK_END) != 0) {
-		
-		//js_printf("cant seek to end\n");
+		js_printf("jsfunc_file_get_contents> Can't seek to end\n");
 		goto fileerror;
 	}
 	len = ftell(f);
 	if (fseek(f, 0, SEEK_SET) != 0) {
-		//js_printf("cant seek to start\n");
+		js_printf("jsfunc_file_get_contents> Can't seek to start\n");
 		goto fileerror;
 	}
 	buf = duk_push_fixed_buffer(ctx, (size_t) len);
 	got = fread(buf, 1, len, f);
 	if (got != (size_t) len) {
-		//js_printf("cant read content\n");
+		js_printf("jsfunc_file_get_contents> Can't read content\n");
 		goto fileerror;
 	}
 	fclose(f);
 	f = NULL;
-	// convert the fixed buffer to string
-	//ret = (char *) duk_to_string(ctx, -1);
-  ret = (char*)duk_buffer_to_string(ctx, -1);
-	//printf("ret=%s\n", ret); // would print the file contents
+	// Convert the fixed buffer to string
+  ret = duk_buffer_to_string(ctx, -1);
+	//js_printf("jsfunc_file_get_contents> ret=%s\n", ret); // would print the file contents
 	return 1;
-	
 	fileerror:
 	if (f) {
 		fclose(f);
@@ -366,9 +374,13 @@ int jsfunc_file_get_contents(duk_context *ctx) {
 }
 
 int jsfunc_file_put_contents(duk_context *ctx) {
-	char *filename = (char *)duk_to_string(ctx, 0);
-	char *text = (char *)duk_to_string(ctx, 1);
-	FILE *f = fopen(filename, "w");
+  const char *filename = NULL;
+	const char *text     = NULL;
+	FILE *f              = NULL;
+  // #########################
+	filename = duk_to_string(ctx, 0);
+	text = duk_to_string(ctx, 1);
+	f = fopen(filename, "w");
 	if (!f) {
 		duk_push_int(ctx, 0);
 		return 1;
@@ -385,9 +397,11 @@ int jsfunc_get_global(duk_context *ctx) {
 }
 
 int js_printf(char *msg, ...) {
-  va_list argptr;
+  va_list argptr = 0;
+  int ret        = 0;
+  // #########################
   va_start(argptr, msg);
-  int ret = vprintf(msg, argptr);
+  ret = vprintf(msg, argptr);
   va_end(argptr);
   return ret;
 }
@@ -407,14 +421,14 @@ void js_reload() {
 }
 
 void quickjs_reload() {
-  JSValue ret;
-  JSValue exception;
-  JSValue func;
-  JSValue jsFilename;
-  JSValue includeRet;
-  const char *path;
-  const char *str;
-  char filename[512];
+  JSValue ret        = 0;
+  JSValue exception  = 0;
+  JSValue func       = 0;
+  JSValue jsFilename = 0;
+  JSValue includeRet = 0;
+  const char *path   = NULL;
+  const char *str    = NULL;
+  char filename[512] = {0};
   // #########################
   func = JS_NewCFunction(quickjs_ctx, quickjsfunc_exedir, "exedir", 0);
   ret = JS_Call(quickjs_ctx, func, JS_UNDEFINED, 0, NULL);
@@ -448,7 +462,9 @@ int jsfunc_reload(duk_context *ctx) {
 }
 
 int jsfunc_include(duk_context *ctx) {
-  char *filename = (char *) duk_to_string(ctx, 0);
+  const char *filename = NULL;
+  // #########################
+  filename = duk_to_string(ctx, 0);
   js_eval_file_safe(filename);
   return 0;
 }
@@ -499,33 +515,38 @@ int jsfunc_exedir(duk_context *ctx) {
 // QuickJS api
 
 int jsfunc_JS_NewRuntime(duk_context *ctx) {
-  JSRuntime *rt = JS_NewRuntime();
+  JSRuntime *rt = NULL;
+  // #########################
+  rt = JS_NewRuntime();
   duk_push_pointer(ctx, rt);
   return 1;
 }
 
 int jsfunc_JS_NewContext(duk_context *ctx) {
-  JSRuntime *rt = (JSRuntime *) duk_to_pointer(ctx, 0);
-  JSContext *ctx_quickjs = JS_NewContext(rt);
+  JSRuntime *rt          = NULL;
+  JSContext *ctx_quickjs = NULL;
+  // #########################
+  rt = (JSRuntime *) duk_to_pointer(ctx, 0);
+  ctx_quickjs = JS_NewContext(rt);
   duk_push_pointer(ctx, ctx_quickjs);
   return 1;
 }
 
 int jsfunc_JS_Eval(duk_context *ctx) {
-  const char *str;
-  JSValue ret;
-  JSValue retloop;
-  JSContext *ctx_quickjs;
-  JSValue strForTag;
-  JSValue exception;
-  char defaultMessage[256];
-  int tag;
-  int tagloop;
-  int success;
-  uint32_t i;
-  int64_t n;
-  duk_idx_t objectIndex;
-  duk_idx_t arrayIndex;
+  const char *str        = NULL;
+  JSContext *ctx_quickjs = NULL;
+  JSValue ret       = 0;
+  JSValue retloop   = 0;
+  JSValue strForTag = 0;
+  JSValue exception = 0;
+  char defaultMessage[256] = {0};
+  int tag     = 0;
+  int tagloop = 0;
+  int success = 0;
+  uint32_t i = 0;
+  int64_t n  = 0;
+  duk_idx_t objectIndex = 0;
+  duk_idx_t arrayIndex  = 0;
   // #########################
   ctx_quickjs = (JSContext *) duk_to_pointer(ctx, 0);
   str = duk_to_string(ctx, 1);
@@ -620,11 +641,11 @@ int jsfunc_JS_Eval(duk_context *ctx) {
 }
 
 void quickjs_eval(char *str) {
-  const char *tostr;
-  JSValue ret;
-  JSValue exception;
-  JSValue global;
-  JSValue lines;
+  const char *tostr = NULL;
+  JSValue ret       = 0;
+  JSValue exception = 0;
+  JSValue global    = 0;
+  JSValue lines     = 0;
   // #########################
   ret = JS_Eval(quickjs_ctx, str, strlen(str), "<quickjs_eval>", 0 /*flags*/);
   if (JS_IsException(ret)) {
@@ -638,8 +659,6 @@ void quickjs_eval(char *str) {
   tostr = JS_ToCString(quickjs_ctx, ret);
   printf("quickjs_eval> %s\n", tostr);
   JS_FreeCString(quickjs_ctx, tostr);
-
-  
   global = JS_GetGlobalObject(quickjs_ctx);
   lines = JS_GetPropertyStr(quickjs_ctx, global, "lines");
   // JSValue js_array_push(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv, int unshift);
@@ -649,10 +668,10 @@ void quickjs_eval(char *str) {
 }
 
 uint8_t *js_load_file(JSContext *ctx, size_t *pbuf_len, const char *filename) {
-  FILE *f;
-  uint8_t *buf;
-  size_t buf_len;
-  long lret;
+  FILE *f        = NULL;
+  uint8_t *buf   = NULL;
+  size_t buf_len = 0;
+  long lret      = 0;
   // #########################
   f = fopen(filename, "rb");
   if (!f) {
@@ -701,10 +720,10 @@ uint8_t *js_load_file(JSContext *ctx, size_t *pbuf_len, const char *filename) {
 
 /* load and evaluate a file */
 JSValue quickjsfunc_include(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
-  uint8_t *buf;
-  const char *filename;
-  JSValue ret;
-  size_t buf_len;
+  uint8_t *buf         = NULL;
+  const char *filename = NULL;
+  JSValue ret          = 0;
+  size_t buf_len       = 0;
   // #########################
   filename = JS_ToCString(ctx, argv[0]);
   if (!filename) {
@@ -722,13 +741,12 @@ JSValue quickjsfunc_include(JSContext *ctx, JSValueConst this_val, int argc, JSV
   return ret;
 }
 
-
 /* load and evaluate a file */
 JSValue quickjsfunc_file_get_contents(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
-  uint8_t *buf;
-  const char *filename;
-  JSValue ret;
-  size_t buf_len;
+  uint8_t *buf         = NULL;
+  const char *filename = NULL;
+  JSValue ret          = 0;
+  size_t buf_len       = 0;
   // #########################
   filename = JS_ToCString(ctx, argv[0]);
   if (!filename) {
@@ -747,7 +765,7 @@ JSValue quickjsfunc_file_get_contents(JSContext *ctx, JSValueConst this_val, int
 }
 
 JSValue quickjsfunc_exe(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
-  JSValue ret;
+  JSValue ret = 0;
   // #########################
 #ifdef _WIN32
   char path[MAX_PATH];
@@ -764,7 +782,7 @@ JSValue quickjsfunc_exe(JSContext *ctx, JSValueConst this_val, int argc, JSValue
 }
 
 JSValue quickjsfunc_exedir(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
-  JSValue ret;
+  JSValue ret = 0;
   // #########################
 #ifdef _WIN32
   char path[MAX_PATH];
