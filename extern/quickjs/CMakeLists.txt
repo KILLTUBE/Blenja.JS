@@ -13,66 +13,40 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
 # ***** END GPL LICENSE BLOCK *****
 
 set(INC
-  ../include
-  ../../blenfont
-  ../../blenkernel
-  ../../blenlib
-  ../../blentranslation
-  ../../gpu
-  ../../makesdna
-  ../../makesrna
-  ../../windowmanager
-  ../../../../intern/glew-mx
-  ../../../../intern/guardedalloc
-  ../../../../extern/duktape
+  .
 )
 
-
 set(SRC
-  space_text.c
-  text_autocomplete.c
-  text_draw.c
-  text_format.c
-  text_format_lua.c
-  text_format_osl.c
-  text_format_pov.c
-  text_format_pov_ini.c
-  text_format_py.c
-  text_header.c
-  text_ops.c
-  text_undo.c
-  text_duktape.c
-
-  text_format.h
-  text_intern.h
-  text_duktape.h
+  cutils.c
+  cutils.h
+  libregexp.c
+  libregexp.h
+  libregexp-opcode.h
+  libunicode.c
+  libunicode.h
+  libunicode-table.h
+  list.h
+  quickjs.h
+  quickjs.c
+  quickjs-atom.h
+  quickjs-jsx.h
+  #quickjs-libc.c
+  #quickjs-libc.h
+  quickjs-opcode.h
+  quickjs-version.h
+  win/dirent.h
+  win/getopt.h
 )
 
 set(LIB
-  bf_blenkernel
-  bf_blenlib
-  extern_duktape
-  extern_quickjs
 )
 
-
-if(WITH_PYTHON)
-  list(APPEND INC
-    ../../python
-  )
-  add_definitions(-DWITH_PYTHON)
-endif()
-
-if(WITH_INTERNATIONAL)
-  add_definitions(-DWITH_INTERNATIONAL)
-endif()
-
-# QuickJS defines
 add_compile_definitions(JS_STRICT_NAN_BOXING)
 add_compile_definitions(CONFIG_JSX)
 #add_compile_definitions(CONFIG_STORAGE)
 
-blender_add_lib(bf_editor_space_text "${SRC}" "${INC}" "${INC_SYS}" "${LIB}")
+blender_add_lib(extern_quickjs "${SRC}" "${INC}" "" "${LIB}")

@@ -115,3 +115,4 @@ if (WITH_COMPOSITOR)
 endif()
 
 add_subdirectory(duktape)
+add_subdirectory(quickjs)
