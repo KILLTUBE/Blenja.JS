@@ -43,6 +43,8 @@ set(SRC
   text_format_pov_ini.c
   text_format_py.c
   text_header.c
+  text_op_execute.c
+  text_op_execute.h
   text_ops.c
   text_undo.c
   text_duktape.c

@@ -49,6 +49,8 @@
 #include "text_format.h"
 #include "text_intern.h" /* own include */
 
+#include "text_op_execute.h"
+
 /* ******************** default callbacks for text space ***************** */
 
 static SpaceLink *text_create(const ScrArea *UNUSED(area), const Scene *UNUSED(scene))
@@ -120,12 +122,38 @@ static SpaceLink *text_duplicate(SpaceLink *sl)
   return (SpaceLink *)stextn;
 }
 
-static void text_listener(const wmSpaceTypeListenerParams *params)
-{
-  ScrArea *area = params->area;
+static void text_listener(const wmSpaceTypeListenerParams *params) {
+  ScrArea *area   = params->area;
   wmNotifier *wmn = params->notifier;
-  SpaceText *st = area->spacedata.first;
-
+  SpaceText *st   = area->spacedata.first;
+  // #########################
+  #if 0
+  printf("text_listener>\n");
+  printf("params=%p\n", params);
+  // area
+  printf("params->area                       = %p           \n", params->area);
+  printf("params->area->actionzones          = %p (ListBase)\n", params->area->actionzones);
+  printf("params->area->butspacetype         = %c (char)    \n", params->area->butspacetype);
+  printf("params->area->butspacetype_subtype = %h (short)   \n", params->area->butspacetype_subtype);
+  printf("params->area->do_refresh           = %c (char)    \n", params->area->do_refresh);
+  printf("params->area->flag                 = %h (short)   \n", params->area->flag);
+  // notifier
+  printf("params->notifier                  = %p (wmNotifier *)       \n", params->notifier);
+  printf("params->notifier->action          = %d (unsigned int)       \n", params->notifier->action);
+  printf("params->notifier->category        = %d (unsigned int)       \n", params->notifier->category);
+  printf("params->notifier->data            = %d (unsigned int)       \n", params->notifier->data);
+  printf("params->notifier->next            = %p (struct wmNotifier *)\n", params->notifier->next);
+  printf("params->notifier->prev            = %p (struct wmNotifier *)\n", params->notifier->prev);
+  // scene
+  printf("params->scene                      = %p (struct Scene *)   \n", params->scene);
+  printf("params->scene->active_keyingset    = %d (int)              \n", params->scene->active_keyingset);
+  printf("params->scene->adt                 = %p (struct AnimData *)\n", params->scene->adt);
+  // window
+  printf("params->window                     = %p (stuct wmWindow *)\n", params->window);
+  printf("params->window->active             = '%c' (char)          \n", params->window->active);
+  printf("params->window->addmousemove       = '%c' (char)          \n", params->window->addmousemove);
+  printf("params->window->cursor             = %h (short)           \n", params->window->cursor);
+  #endif
   /* context changes */
   switch (wmn->category) {
     case NC_TEXT:
@@ -168,8 +196,7 @@ static void text_listener(const wmSpaceTypeListenerParams *params)
   }
 }
 
-static void text_operatortypes(void)
-{
+void text_operatortypes() {
   WM_operatortype_append(TEXT_OT_new);
   WM_operatortype_append(TEXT_OT_open);
   WM_operatortype_append(TEXT_OT_reload);
@@ -224,6 +251,8 @@ static void text_operatortypes(void)
   WM_operatortype_append(TEXT_OT_resolve_conflict);
 
   WM_operatortype_append(TEXT_OT_autocomplete);
+  
+  WM_operatortype_append(TEXT_OT_execute_everything_or_selection);
 }
 
 static void text_keymap(struct wmKeyConfig *keyconf)
@@ -234,7 +263,7 @@ static void text_keymap(struct wmKeyConfig *keyconf)
 
 const char *text_context_dir[] = {"edit_text", NULL};
 
-static int /*eContextResult*/ text_context(const bContext *C,
+int /*eContextResult*/ text_context(const bContext *C,
                                            const char *member,
                                            bContextDataResult *result)
 {
