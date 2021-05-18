@@ -153,6 +153,26 @@ void text_duktape_init() {
 
   // Reload (files)
   quickjs_reload();
+
+  quickjs_eval(
+    "var dir = exedir() + '/src_duktape';                           \n"
+    "// If this file exists, use the files from the repo directly.  \n"
+    "// No need to mess around with copying files back and forth.   \n"
+    "var dirgit = file_get_contents(exedir() + '/src_duktape.txt'); \n"
+    "if (dirgit) {                                                  \n"
+    "  dir = dirgit;                                                \n"
+    "}                                                              \n"
+    "function require(filename) {                                   \n"
+    "  var ret;                                                     \n"
+    "  ret = include(dir + '/' + filename);                         \n"
+    "  return ret;                                                  \n"
+    "}                                                              \n"
+    "console.log('dir', dir);                                       \n"
+    "window = {};                                                   \n"
+    "require('TypeSpirit.js');                                      \n"
+    "var ret = TypeSpirit.rewrite('var idk: number;').out           \n"
+    "console.log('ret', ret);                                       \n"
+  );
 }
 
 void text_duktape_lines_each(text_duktape_lines_each_callback cb) {
@@ -640,31 +660,39 @@ int jsfunc_JS_Eval(duk_context *ctx) {
   }
 }
 
+void quickjs_push_line(JSValue line) {
+  JSValue global = 0;
+  JSValue lines  = 0;
+  // #########################
+  global = JS_GetGlobalObject(quickjs_ctx);
+  lines = JS_GetPropertyStr(quickjs_ctx, global, "lines");
+  // JSValue js_array_push(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv, int unshift);
+  js_array_push(quickjs_ctx, lines, 1, &line, 0);
+  JS_FreeValue(quickjs_ctx, global);
+  JS_FreeValue(quickjs_ctx, lines);
+}
+
 void quickjs_eval(char *str) {
   const char *tostr = NULL;
   JSValue ret       = 0;
   JSValue exception = 0;
-  JSValue global    = 0;
-  JSValue lines     = 0;
   // #########################
   ret = JS_Eval(quickjs_ctx, str, strlen(str), "<quickjs_eval>", 0 /*flags*/);
   if (JS_IsException(ret)) {
     exception = JS_GetException(quickjs_ctx);
     tostr = JS_ToCString(quickjs_ctx, exception);
-    printf("quickjs_eval exception> %s\n", tostr);
+    //printf("quickjs_eval exception> %s\n", tostr);
     JS_FreeCString(quickjs_ctx, tostr);
+    quickjs_push_line(exception);
     JS_FreeValue(quickjs_ctx, exception);
     return;
   }
+#if 0
   tostr = JS_ToCString(quickjs_ctx, ret);
   printf("quickjs_eval> %s\n", tostr);
   JS_FreeCString(quickjs_ctx, tostr);
-  global = JS_GetGlobalObject(quickjs_ctx);
-  lines = JS_GetPropertyStr(quickjs_ctx, global, "lines");
-  // JSValue js_array_push(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv, int unshift);
-  js_array_push(quickjs_ctx, lines, 1, &ret, 0);
-  JS_FreeValue(quickjs_ctx, global);
-  JS_FreeValue(quickjs_ctx, lines);
+#endif
+  quickjs_push_line(ret);
 }
 
 uint8_t *js_load_file(JSContext *ctx, size_t *pbuf_len, const char *filename) {
