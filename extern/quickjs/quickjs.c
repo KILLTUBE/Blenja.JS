@@ -9546,11 +9546,13 @@ static JSValue JS_ThrowSyntaxErrorVarRedeclaration(JSContext *ctx, JSAtom prop)
 
 /* flags is 0, DEFINE_GLOBAL_LEX_VAR or DEFINE_GLOBAL_FUNC_VAR */
 /* XXX: could support exotic global object. */
-static int JS_CheckDefineGlobalVar(JSContext *ctx, JSAtom prop, int flags)
-{
+static int JS_CheckDefineGlobalVar(JSContext *ctx, JSAtom prop, int flags) {
     JSObject *p;
     JSShapeProperty *prs;
-
+    // #########################
+    // kungfooman: Allow redeclaration of classes/variables/...
+    return 0;
+#if 0
     p = JS_VALUE_GET_OBJ(ctx->global_obj);
     prs = find_own_property1(p, prop);
     /* XXX: should handle JS_PROP_AUTOINIT */
@@ -9583,6 +9585,7 @@ static int JS_CheckDefineGlobalVar(JSContext *ctx, JSAtom prop, int flags)
         return -1;
     }
     return 0;
+#endif
 }
 
 /* def_flags is (0, DEFINE_GLOBAL_LEX_VAR) |
