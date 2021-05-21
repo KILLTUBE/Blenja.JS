@@ -73,7 +73,7 @@ JSValue quickjsfunc_file_get_contents(JSContext *ctx, JSValueConst this_val, int
 JSValue quickjsfunc_exe              (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_exedir           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_reload           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
-
+JSValue quickjsfunc_addmesh          (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
   JSValue global = 0;
   JSValue func   = 0;
@@ -148,6 +148,8 @@ void text_duktape_init() {
   quickjs_add_function("exe"              , quickjsfunc_exe              , 0);
   quickjs_add_function("exedir"           , quickjsfunc_exedir           , 0);
   quickjs_add_function("reload"           , quickjsfunc_reload           , 0);
+  quickjs_add_function("addmesh"          , quickjsfunc_addmesh           , 0);
+  
 
   JS_FreeValue(quickjs_ctx, global_obj);
 
@@ -839,4 +841,72 @@ JSValue quickjsfunc_exedir(JSContext *ctx, JSValueConst this_val, int argc, JSVa
 JSValue quickjsfunc_reload(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
   quickjs_reload();
   return JS_UNDEFINED;
+}
+
+void quickjs_set_bContext(bContext *C) {
+  JSValue global;
+  JSValue pointer;
+  // #########################
+  global = JS_GetGlobalObject(quickjs_ctx);
+  pointer = JS_MKPTR(JS_TAG_INT, C);
+  JS_SetPropertyStr(quickjs_ctx, global, "C", pointer);
+  JS_FreeValue(quickjs_ctx, global);
+}
+
+bool addmesh(bContext *C) {
+	Main *bmain = CTX_data_main(C);
+	Scene *scene = CTX_data_scene(C);
+	ViewLayer *view_layer = CTX_data_view_layer(C);
+
+	struct Object *obedit = BKE_object_add(bmain, /*scene,*/ view_layer, OB_MESH, "xxx");
+
+	struct Mesh * mesh = (struct Mesh *)obedit->data;
+
+	mesh->totvert = 4; /* total number of vertices */
+	mesh->mvert   = (struct MVert *)CustomData_add_layer(&mesh->vdata, CD_MVERT, CD_CALLOC, NULL, mesh->totvert);
+	mesh->mvert[0].co[0] = -1; mesh->mvert[0].co[1] = -1; mesh->mvert[0].co[2] = 0;
+	mesh->mvert[1].co[0] = -1; mesh->mvert[1].co[1] =  1; mesh->mvert[1].co[2] = 0;
+	mesh->mvert[2].co[0] =  1; mesh->mvert[2].co[1] =  1; mesh->mvert[2].co[2] = 0;
+	mesh->mvert[3].co[0] =  1; mesh->mvert[3].co[1] = -1; mesh->mvert[3].co[2] = 0;
+
+	mesh->totpoly = 1;	/* this is the total number of faces */
+	mesh->totloop = 4;	/* this is the total number of vertices required to describe the faces */
+						/* Since we're making a single quad here, this value is 4, if we had chosen */
+						/* to make 2 triangles, we would have needed 6 to properly describe both triangles */
+
+	mesh->mpoly   = (MPoly *)CustomData_add_layer(&mesh->pdata, CD_MPOLY, CD_CALLOC, NULL, mesh->totpoly);
+	mesh->mloop   = (MLoop *)CustomData_add_layer(&mesh->ldata, CD_MLOOP, CD_CALLOC, NULL, mesh->totloop);
+	
+	mesh->mloop[0].v = 0;
+	mesh->mloop[1].v = 1;
+	mesh->mloop[2].v = 2;
+	mesh->mloop[3].v = 3;
+
+	mesh->mpoly[0].loopstart = 0;
+	mesh->mpoly[0].totloop = 4;
+
+	/* Too lazy to add normals + edges myself, edges seem really needed */
+	/* BKE_mesh_validate will do the tedious work for us. */
+	BKE_mesh_calc_normals(mesh);
+	BKE_mesh_validate(mesh,false, false);
+
+	/* Tell blender things have changed */
+	DEG_id_tag_update(&scene->id, /*DEG_TAG_COPY_ON_WRITE*/0);
+	DEG_relations_tag_update(bmain);
+	WM_event_add_notifier(C, NC_OBJECT | ND_TRANSFORM, NULL);
+	return true;
+}
+
+JSValue quickjsfunc_addmesh(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  if (argc == 0) {
+    js_printf("addmesh> missing arguments[0]: bContext *C\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf("addmesh> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  bContext *C = JS_VALUE_GET_PTR(argv[0]);
+  addmesh(C);
+  return JS_TRUE;
 }

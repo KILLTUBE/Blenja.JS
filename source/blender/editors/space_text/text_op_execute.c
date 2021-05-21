@@ -2,6 +2,49 @@
 
 #include "text_duktape.h"
 
+#if 0
+
+static int object_hide_view_set_exec(bContext *C, wmOperator *op)
+{
+  Scene *scene = CTX_data_scene(C);
+  ViewLayer *view_layer = CTX_data_view_layer(C);
+  const bool unselected = RNA_boolean_get(op->ptr, "unselected");
+  bool changed = false;
+
+  /* Hide selected or unselected objects. */
+  LISTBASE_FOREACH (Base *, base, &view_layer->object_bases) {
+    if (!(base->flag & BASE_VISIBLE_VIEWLAYER)) {
+      continue;
+    }
+
+    if (!unselected) {
+      if (base->flag & BASE_SELECTED) {
+        ED_object_base_select(base, BA_DESELECT);
+        base->flag |= BASE_HIDDEN;
+        changed = true;
+      }
+    }
+    else {
+      if (!(base->flag & BASE_SELECTED)) {
+        ED_object_base_select(base, BA_DESELECT);
+        base->flag |= BASE_HIDDEN;
+        changed = true;
+      }
+    }
+  }
+  if (!changed) {
+    return OPERATOR_CANCELLED;
+  }
+
+  BKE_layer_collection_sync(scene, view_layer);
+  DEG_id_tag_update(&scene->id, ID_RECALC_BASE_FLAGS);
+  WM_event_add_notifier(C, NC_SCENE | ND_OB_SELECT, scene);
+  WM_event_add_notifier(C, NC_SCENE | ND_OB_VISIBLE, scene);
+
+  return OPERATOR_FINISHED;
+}
+#endif
+
 int text_execute_exec(bContext *C, wmOperator *op) {
   Text *text = NULL;
   // #########################
@@ -37,6 +80,7 @@ int text_execute_invoke(bContext *C, wmOperator *op, const wmEvent *UNUSED(event
   } else {
     buf = txt_to_buf(text, NULL);
   }
+  quickjs_set_bContext(C);
   quickjs_eval(buf);
   //printf("text_execute_invoke\n");
   //printf("Selection: \"%s\"", sel);
