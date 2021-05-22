@@ -68,12 +68,14 @@ JSValue quickjs_log(JSContext *ctx, JSValueConst this_val, int argc, JSValueCons
 }
 
 
-JSValue quickjsfunc_include          (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
-JSValue quickjsfunc_file_get_contents(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
-JSValue quickjsfunc_exe              (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
-JSValue quickjsfunc_exedir           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
-JSValue quickjsfunc_reload           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
-JSValue quickjsfunc_addmesh          (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_include                (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_file_get_contents      (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_exe                    (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_exedir                 (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_reload                 (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_addmesh                (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+
 void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
   JSValue global = 0;
   JSValue func   = 0;
@@ -143,12 +145,13 @@ void text_duktape_init() {
   quickjs_lines = JS_NewArray(quickjs_ctx);
   JS_SetPropertyStr(quickjs_ctx, global_obj, "lines", quickjs_lines);
 
-  quickjs_add_function("include"          , quickjsfunc_include          , 1);
-  quickjs_add_function("file_get_contents", quickjsfunc_file_get_contents, 1);
-  quickjs_add_function("exe"              , quickjsfunc_exe              , 0);
-  quickjs_add_function("exedir"           , quickjsfunc_exedir           , 0);
-  quickjs_add_function("reload"           , quickjsfunc_reload           , 0);
-  quickjs_add_function("addmesh"          , quickjsfunc_addmesh           , 0);
+  quickjs_add_function("include"                , quickjsfunc_include                 , 1);
+  quickjs_add_function("file_get_contents"      , quickjsfunc_file_get_contents       , 1);
+  quickjs_add_function("exe"                    , quickjsfunc_exe                     , 0);
+  quickjs_add_function("exedir"                 , quickjsfunc_exedir                  , 0);
+  quickjs_add_function("reload"                 , quickjsfunc_reload                  , 0);
+  quickjs_add_function("addmesh"                , quickjsfunc_addmesh                 , 1);
+  quickjs_add_function("mesh_set_vertid_xyz_val", quickjsfunc_mesh_set_vertid_xyz_val , 4);
   
 
   JS_FreeValue(quickjs_ctx, global_obj);
@@ -843,31 +846,50 @@ JSValue quickjsfunc_reload(JSContext *ctx, JSValueConst this_val, int argc, JSVa
   return JS_UNDEFINED;
 }
 
+bContext *globalC = NULL;
+
 void quickjs_set_bContext(bContext *C) {
   JSValue global;
   JSValue pointer;
   // #########################
+  globalC = C;
   global = JS_GetGlobalObject(quickjs_ctx);
   pointer = JS_MKPTR(JS_TAG_INT, C);
   JS_SetPropertyStr(quickjs_ctx, global, "C", pointer);
   JS_FreeValue(quickjs_ctx, global);
 }
 
-bool addmesh(bContext *C) {
-	Main *bmain = CTX_data_main(C);
-	Scene *scene = CTX_data_scene(C);
-	ViewLayer *view_layer = CTX_data_view_layer(C);
-
-	struct Object *obedit = BKE_object_add(bmain, /*scene,*/ view_layer, OB_MESH, "xxx");
-
-	struct Mesh * mesh = (struct Mesh *)obedit->data;
+JSValue addmesh(bContext *C) {
+  Main *bmain;
+  Scene *scene;
+  ViewLayer *view_layer;
+  struct Object *obedit;
+  struct Mesh *mesh;
+  // #########################
+	bmain = CTX_data_main(C);
+	scene = CTX_data_scene(C);
+	view_layer = CTX_data_view_layer(C);
+	obedit = BKE_object_add(bmain, /*scene,*/ view_layer, OB_MESH, "xxx");
+	mesh = (struct Mesh *)obedit->data;
 
 	mesh->totvert = 4; /* total number of vertices */
 	mesh->mvert   = (struct MVert *)CustomData_add_layer(&mesh->vdata, CD_MVERT, CD_CALLOC, NULL, mesh->totvert);
-	mesh->mvert[0].co[0] = -1; mesh->mvert[0].co[1] = -1; mesh->mvert[0].co[2] = 0;
-	mesh->mvert[1].co[0] = -1; mesh->mvert[1].co[1] =  1; mesh->mvert[1].co[2] = 0;
-	mesh->mvert[2].co[0] =  1; mesh->mvert[2].co[1] =  1; mesh->mvert[2].co[2] = 0;
-	mesh->mvert[3].co[0] =  1; mesh->mvert[3].co[1] = -1; mesh->mvert[3].co[2] = 0;
+  // 0
+	mesh->mvert[0].co[0] = -1;
+  mesh->mvert[0].co[1] = -1;
+  mesh->mvert[0].co[2] =  0;
+  // 1
+	mesh->mvert[1].co[0] = -1;
+  mesh->mvert[1].co[1] =  1;
+  mesh->mvert[1].co[2] =  0;
+  // 2
+	mesh->mvert[2].co[0] = 1;
+  mesh->mvert[2].co[1] = 1;
+  mesh->mvert[2].co[2] = 0;
+  // 3
+	mesh->mvert[3].co[0] =  1;
+  mesh->mvert[3].co[1] = -1;
+  mesh->mvert[3].co[2] =  0;
 
 	mesh->totpoly = 1;	/* this is the total number of faces */
 	mesh->totloop = 4;	/* this is the total number of vertices required to describe the faces */
@@ -888,16 +910,19 @@ bool addmesh(bContext *C) {
 	/* Too lazy to add normals + edges myself, edges seem really needed */
 	/* BKE_mesh_validate will do the tedious work for us. */
 	BKE_mesh_calc_normals(mesh);
-	BKE_mesh_validate(mesh,false, false);
+	BKE_mesh_validate(mesh, false, false);
 
 	/* Tell blender things have changed */
 	DEG_id_tag_update(&scene->id, /*DEG_TAG_COPY_ON_WRITE*/0);
 	DEG_relations_tag_update(bmain);
 	WM_event_add_notifier(C, NC_OBJECT | ND_TRANSFORM, NULL);
-	return true;
+	return JS_MKPTR(JS_TAG_INT, mesh);
 }
 
 JSValue quickjsfunc_addmesh(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  JSValue mesh;
+  bContext *C;
+  // #########################
   if (argc == 0) {
     js_printf("addmesh> missing arguments[0]: bContext *C\n");
     return JS_FALSE;
@@ -906,7 +931,54 @@ JSValue quickjsfunc_addmesh(JSContext *ctx, JSValueConst this_val, int argc, JSV
     js_printf("addmesh> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
     return JS_FALSE;
   }
-  bContext *C = JS_VALUE_GET_PTR(argv[0]);
-  addmesh(C);
+  C = JS_VALUE_GET_PTR(argv[0]);
+  mesh = addmesh(C);
+  return mesh;
+}
+
+JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh;
+  int vertid;
+  int xyz;
+  float val;
+  if (argc != 4) {
+    js_printf("mesh_set_vertid_xyz_val> expecting three arguments (mesh pointer, vertid, 0-2 for xyz, new float value)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf("mesh_set_vertid_xyz_val> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+
+  
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  vertid = JS_VALUE_GET_INT(argv[1]);
+  xyz    = JS_VALUE_GET_INT(argv[2]);
+  val    = JS_VALUE_GET_FLOAT64(argv[3]);
+
+  mesh->mvert[vertid].co[xyz] = val;
+
+  
+  Main *bmain;
+  Scene *scene;
+	bmain = CTX_data_main(globalC);
+  
+	scene = CTX_data_scene(globalC);
+  //DEG_relations_tag_update(bmain);
+
+  //WM_event_add_notifier(globalC, NC_OBJECT | ND_TRANSFORM, NULL);
+
+  
+	/* Tell blender things have changed */
+	//DEG_id_tag_update(&scene->id, /*DEG_TAG_COPY_ON_WRITE*/0);
+	//DEG_relations_tag_update(bmain);
+	//WM_event_add_notifier(globalC, NC_OBJECT | ND_TRANSFORM, NULL);
+
+  
+  DEG_id_tag_update(&mesh->id, 0);
+  WM_event_add_notifier(globalC, NC_GEOM | ND_DATA, mesh);
+
   return JS_TRUE;
 }
