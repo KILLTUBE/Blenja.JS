@@ -945,6 +945,7 @@ JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_va
   int vertid        = 0;
   int xyz           = 0;
   float val         = 0.0;
+  int valTag        = 0;
   // #########################
   if (argc != 4) {
     js_printf("mesh_set_vertid_xyz_val> expecting three arguments (mesh pointer, vertid, 0-2 for xyz, new float value)\n");
@@ -958,7 +959,12 @@ JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_va
   mesh   = JS_VALUE_GET_PTR(argv[0]);
   vertid = JS_VALUE_GET_INT(argv[1]);
   xyz    = JS_VALUE_GET_INT(argv[2]);
-  val    = JS_VALUE_GET_FLOAT64(argv[3]);
+  valTag = JS_VALUE_GET_TAG(argv[3]);
+  if (valTag == JS_TAG_INT) {
+    val = JS_VALUE_GET_INT(argv[3]);
+  } else if (valTag == JS_TAG_FLOAT64) {
+    val = JS_VALUE_GET_FLOAT64(argv[3]);
+  }
   mesh->mvert[vertid].co[xyz] = val;
   return JS_TRUE;
 }
