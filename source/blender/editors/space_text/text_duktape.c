@@ -75,7 +75,9 @@ JSValue quickjsfunc_exedir                 (JSContext *ctx, JSValueConst this_va
 JSValue quickjsfunc_reload                 (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_addmesh                (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_mesh_get_vertid_xyz_val(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_mesh_update            (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_mesh_totvert           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 
 void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
   JSValue global = 0;
@@ -153,8 +155,10 @@ void text_duktape_init() {
   quickjs_add_function("reload"                 , quickjsfunc_reload                  , 0);
   quickjs_add_function("addmesh"                , quickjsfunc_addmesh                 , 1);
   quickjs_add_function("mesh_set_vertid_xyz_val", quickjsfunc_mesh_set_vertid_xyz_val , 4);
+  quickjs_add_function("mesh_get_vertid_xyz_val", quickjsfunc_mesh_get_vertid_xyz_val , 3);
   quickjs_add_function("mesh_update"            , quickjsfunc_mesh_update             , 1);
-
+  quickjs_add_function("mesh_totvert"           , quickjsfunc_mesh_totvert            , 1);
+  
   JS_FreeValue(quickjs_ctx, global_obj);
 
   // Reload (files)
@@ -948,7 +952,7 @@ JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_va
   int valTag        = 0;
   // #########################
   if (argc != 4) {
-    js_printf("mesh_set_vertid_xyz_val> expecting three arguments (mesh pointer, vertid, 0-2 for xyz, new float value)\n");
+    js_printf("mesh_set_vertid_xyz_val> expecting four arguments (mesh pointer, vertid, 0-2 for xyz, new float value)\n");
     return JS_FALSE;
   }
   if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
@@ -969,6 +973,26 @@ JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_va
   return JS_TRUE;
 }
 
+JSValue quickjsfunc_mesh_get_vertid_xyz_val(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int vertid        = 0;
+  int xyz           = 0;
+  // #########################
+  if (argc != 3) {
+    js_printf("mesh_get_vertid_xyz> expecting three arguments (mesh pointer, vertid, 0-2 for xyz)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf("mesh_get_vertid_xyz> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  vertid = JS_VALUE_GET_INT(argv[1]);
+  xyz    = JS_VALUE_GET_INT(argv[2]);
+  return JS_NewFloat64(quickjs_ctx, mesh->mvert[vertid].co[xyz]);
+}
+
 JSValue quickjsfunc_mesh_update(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
   struct Mesh *mesh = NULL;
   // #########################
@@ -987,4 +1011,20 @@ JSValue quickjsfunc_mesh_update(JSContext *ctx, JSValueConst this_val, int argc,
   DEG_id_tag_update(&mesh->id, 0);
   WM_event_add_notifier(globalC, NC_GEOM | ND_DATA, mesh);
   return JS_TRUE;
+}
+
+JSValue quickjsfunc_mesh_totvert(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  // #########################
+  if (argc != 1) {
+    js_printf("mesh_update> expecting one argument (mesh pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf("mesh_update> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh = JS_VALUE_GET_PTR(argv[0]);
+  return JS_MKVAL(JS_TAG_INT, mesh->totvert);
 }
