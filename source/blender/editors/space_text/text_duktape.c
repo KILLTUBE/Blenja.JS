@@ -75,6 +75,7 @@ JSValue quickjsfunc_exedir                 (JSContext *ctx, JSValueConst this_va
 JSValue quickjsfunc_reload                 (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_addmesh                (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_mesh_update            (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 
 void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
   JSValue global = 0;
@@ -152,32 +153,12 @@ void text_duktape_init() {
   quickjs_add_function("reload"                 , quickjsfunc_reload                  , 0);
   quickjs_add_function("addmesh"                , quickjsfunc_addmesh                 , 1);
   quickjs_add_function("mesh_set_vertid_xyz_val", quickjsfunc_mesh_set_vertid_xyz_val , 4);
-  
+  quickjs_add_function("mesh_update"            , quickjsfunc_mesh_update             , 1);
 
   JS_FreeValue(quickjs_ctx, global_obj);
 
   // Reload (files)
   quickjs_reload();
-
-  quickjs_eval(
-    "var dir = exedir() + '/src_duktape';                           \n"
-    "// If this file exists, use the files from the repo directly.  \n"
-    "// No need to mess around with copying files back and forth.   \n"
-    "var dirgit = file_get_contents(exedir() + '/src_duktape.txt'); \n"
-    "if (dirgit) {                                                  \n"
-    "  dir = dirgit;                                                \n"
-    "}                                                              \n"
-    "function require(filename) {                                   \n"
-    "  var ret;                                                     \n"
-    "  ret = include(dir + '/' + filename);                         \n"
-    "  return ret;                                                  \n"
-    "}                                                              \n"
-    "console.log('dir', dir);                                       \n"
-    "window = {};                                                   \n"
-    "require('TypeSpirit.js');                                      \n"
-    "var ret = TypeSpirit.rewrite('var idk: number;').out           \n"
-    "console.log('ret', ret);                                       \n"
-  );
 }
 
 void text_duktape_lines_each(text_duktape_lines_each_callback cb) {
@@ -455,6 +436,7 @@ void quickjs_reload() {
   const char *str    = NULL;
   char filename[512] = {0};
   // #########################
+#if 0
   func = JS_NewCFunction(quickjs_ctx, quickjsfunc_exedir, "exedir", 0);
   ret = JS_Call(quickjs_ctx, func, JS_UNDEFINED, 0, NULL);
   if (JS_IsException(ret)) {
@@ -479,6 +461,27 @@ void quickjs_reload() {
   JS_FreeValue(quickjs_ctx, includeRet);
   JS_FreeCString(quickjs_ctx, path);
   //quickjs_call("PostReload", "");
+#endif
+
+
+
+  quickjs_eval(
+    "var dir = exedir() + '/src_duktape';                           \n"
+    "// If this file exists, use the files from the repo directly.  \n"
+    "// No need to mess around with copying files back and forth.   \n"
+    "var dirgit = file_get_contents(exedir() + '/src_duktape.txt'); \n"
+    "if (dirgit) {                                                  \n"
+    "  dir = dirgit;                                                \n"
+    "}                                                              \n"
+    "function require(filename) {                                   \n"
+    "  var ret;                                                     \n"
+    "  ret = include(dir + '/' + filename);                         \n"
+    "  return ret;                                                  \n"
+    "}                                                              \n"
+    "log('QuickJS require dir', dir);                               \n"
+    "window = {};                                                   \n"
+    "require('init.js');                                            \n"
+  );
 }
 
 int jsfunc_reload(duk_context *ctx) {
@@ -921,26 +924,28 @@ JSValue addmesh(bContext *C) {
 
 JSValue quickjsfunc_addmesh(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
   JSValue mesh;
-  bContext *C;
+  //bContext *C;
   // #########################
-  if (argc == 0) {
-    js_printf("addmesh> missing arguments[0]: bContext *C\n");
-    return JS_FALSE;
-  }
-  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
-    js_printf("addmesh> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
-    return JS_FALSE;
-  }
-  C = JS_VALUE_GET_PTR(argv[0]);
-  mesh = addmesh(C);
+  //if (argc != 1) {
+  //  js_printf("addmesh> missing arguments[0]: bContext *C\n");
+  //  return JS_FALSE;
+  //}
+  //if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+  //  js_printf("addmesh> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+  //  return JS_FALSE;
+  //}
+  //C = JS_VALUE_GET_PTR(argv[0]);
+  //mesh = addmesh(C);
+  mesh = addmesh(globalC);
   return mesh;
 }
 
 JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
-  struct Mesh *mesh;
-  int vertid;
-  int xyz;
-  float val;
+  struct Mesh *mesh = NULL;
+  int vertid        = 0;
+  int xyz           = 0;
+  float val         = 0.0;
+  // #########################
   if (argc != 4) {
     js_printf("mesh_set_vertid_xyz_val> expecting three arguments (mesh pointer, vertid, 0-2 for xyz, new float value)\n");
     return JS_FALSE;
@@ -949,36 +954,31 @@ JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_va
     js_printf("mesh_set_vertid_xyz_val> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
     return JS_FALSE;
   }
-
   // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
-
-  
   mesh   = JS_VALUE_GET_PTR(argv[0]);
   vertid = JS_VALUE_GET_INT(argv[1]);
   xyz    = JS_VALUE_GET_INT(argv[2]);
   val    = JS_VALUE_GET_FLOAT64(argv[3]);
-
   mesh->mvert[vertid].co[xyz] = val;
+  return JS_TRUE;
+}
 
-  
-  Main *bmain;
-  Scene *scene;
-	bmain = CTX_data_main(globalC);
-  
-	scene = CTX_data_scene(globalC);
-  //DEG_relations_tag_update(bmain);
-
-  //WM_event_add_notifier(globalC, NC_OBJECT | ND_TRANSFORM, NULL);
-
-  
-	/* Tell blender things have changed */
-	//DEG_id_tag_update(&scene->id, /*DEG_TAG_COPY_ON_WRITE*/0);
-	//DEG_relations_tag_update(bmain);
-	//WM_event_add_notifier(globalC, NC_OBJECT | ND_TRANSFORM, NULL);
-
-  
+JSValue quickjsfunc_mesh_update(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  // #########################
+  if (argc != 1) {
+    js_printf("mesh_update> expecting one argument (mesh pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf("mesh_update> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh = JS_VALUE_GET_PTR(argv[0]);
+  // As found in `blender\editors\mesh\mesh_data.c` file:
+  // void ED_mesh_update(Mesh *mesh, bContext *C, bool calc_edges, bool calc_edges_loose)
   DEG_id_tag_update(&mesh->id, 0);
   WM_event_add_notifier(globalC, NC_GEOM | ND_DATA, mesh);
-
   return JS_TRUE;
 }

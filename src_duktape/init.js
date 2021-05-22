@@ -1,5 +1,12 @@
-dir = exedir();
+function main() {
+    require("Console.js");
+    require("Mesh.js");
+}
 
-include(dir + "\\src_duktape\\Console.js");
-
-//console.log("MAYBE WE SHOULD LOAD", file_get_contents());
+try {
+    main();
+} catch (e) {
+    // Print error to console, when QuickJS initialisation scripts fail
+    log("Exception:");
+    log(e);
+}
