@@ -2,6 +2,7 @@ function main() {
     require("Console.js");
     require("MeshVertex.js");
     require("Mesh.js");
+    require("Object.js");
 }
 
 try {
