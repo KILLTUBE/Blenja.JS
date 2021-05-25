@@ -84,6 +84,7 @@ JSValue quickjsfunc_thingsHaveChanged      (JSContext *ctx, JSValueConst this_va
 JSValue quickjsfunc_object_position        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_object_update          (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_object_children        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_object_name_get        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 
 void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
   JSValue global = 0;
@@ -169,6 +170,7 @@ void text_duktape_init() {
   quickjs_add_function("object_position"        , quickjsfunc_object_position         , 1);
   quickjs_add_function("object_update"          , quickjsfunc_object_update           , 1);
   quickjs_add_function("object_children"        , quickjsfunc_object_children         , 1);
+  quickjs_add_function("object_name_get"        , quickjsfunc_object_name_get         , 1);
   quickjs_add_function("thingsHaveChanged"      , quickjsfunc_thingsHaveChanged       , 0);
   
            
@@ -1248,4 +1250,25 @@ JSValue quickjsfunc_object_children(JSContext *ctx, JSValueConst this_val, int a
   return js_ret;
 }
 
-  
+JSValue quickjsfunc_object_name_get(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  bContext *C             = NULL;
+  Main *bmain             = NULL;
+  Scene *scene            = NULL;
+  struct Object *object   = NULL;
+  JSValue js_ret          = 0;
+  // #########################
+  C = globalC;
+  bmain = CTX_data_main(C);
+  scene = CTX_data_scene(C);
+  if (argc != 1) {
+    js_printf("object_name_get> expecting one argument (object pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf("object_name_get> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  object = JS_VALUE_GET_PTR(argv[0]);
+  js_ret = JS_NewString(quickjs_ctx, object->id.name);
+  return js_ret;
+}
