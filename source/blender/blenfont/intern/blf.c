@@ -581,6 +581,10 @@ void BLF_draw_ascii(int fontid, const char *str, size_t len)
 
 int BLF_draw_mono(int fontid, const char *str, size_t len, int cwidth)
 {
+  if (str == NULL) {
+    str = "BLF_draw_mono> str == NULL";
+    len = strlen(str);
+  }
   if (len == 0 || str[0] == '\0') {
     return 0;
   }
