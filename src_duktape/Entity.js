@@ -12,9 +12,10 @@
 class Entity {
   pointer = 0;
 
-  constructor() {
-    this.pointer = new_object_with_mesh();
+  constructor(name = "Untitled") {
+    this.pointer = new_object_with_mesh(name);
     this.position = new Float32Array(object_position(this.pointer));
+    thingsHaveChanged();
   }
 
   destroy() {
@@ -55,6 +56,9 @@ class Entity {
   }
 
   toString() {
+    if (this.pointer == 0) {
+      return 'Entity(destroyed)';
+    }
     return `Entity(name: ${this.name}, children.length: ${this.children.length})`;
   }
 }

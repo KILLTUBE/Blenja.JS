@@ -968,11 +968,11 @@ JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_va
   int valTag        = 0;
   // #########################
   if (argc != 4) {
-    js_printf("mesh_set_vertid_xyz_val> expecting four arguments (mesh pointer, vertid, 0-2 for xyz, new float value)\n");
+    js_printf(__FUNCTION__ "> expecting four arguments (mesh pointer, vertid, 0-2 for xyz, new float value)\n");
     return JS_FALSE;
   }
   if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
-    js_printf("mesh_set_vertid_xyz_val> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
     return JS_FALSE;
   }
   // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
@@ -995,11 +995,11 @@ JSValue quickjsfunc_mesh_get_vertid_xyz_val(JSContext *ctx, JSValueConst this_va
   int xyz           = 0;
   // #########################
   if (argc != 3) {
-    js_printf("mesh_get_vertid_xyz> expecting three arguments (mesh pointer, vertid, 0-2 for xyz)\n");
+    js_printf(__FUNCTION__ "> expecting three arguments (mesh pointer, vertid, 0-2 for xyz)\n");
     return JS_FALSE;
   }
   if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
-    js_printf("mesh_get_vertid_xyz> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
     return JS_FALSE;
   }
   // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
@@ -1013,11 +1013,11 @@ JSValue quickjsfunc_mesh_update(JSContext *ctx, JSValueConst this_val, int argc,
   struct Mesh *mesh = NULL;
   // #########################
   if (argc != 1) {
-    js_printf("mesh_update> expecting one argument (mesh pointer)\n");
+    js_printf(__FUNCTION__ "> expecting one argument (mesh pointer)\n");
     return JS_FALSE;
   }
   if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
-    js_printf("mesh_update> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
     return JS_FALSE;
   }
   // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
@@ -1033,11 +1033,11 @@ JSValue quickjsfunc_mesh_totvert(JSContext *ctx, JSValueConst this_val, int argc
   struct Mesh *mesh = NULL;
   // #########################
   if (argc != 1) {
-    js_printf("mesh_update> expecting one argument (mesh pointer)\n");
+    js_printf(__FUNCTION__ "> expecting one argument (mesh pointer)\n");
     return JS_FALSE;
   }
   if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
-    js_printf("mesh_update> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
     return JS_FALSE;
   }
   // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
@@ -1067,18 +1067,19 @@ JSValue quickjsfunc_object_destroy(JSContext *ctx, JSValueConst this_val, int ar
   // #########################
   C = globalC;
   if (argc != 1) {
-    js_printf("object_destroy> expecting one argument (object pointer)\n");
+    js_printf(__FUNCTION__ "> expecting one argument (object pointer)\n");
     return JS_FALSE;
   }
   if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
-    js_printf("object_destroy> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
     return JS_FALSE;
   }
   // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
   bmain = CTX_data_main(C);
   scene = CTX_data_scene(C);
   object = JS_VALUE_GET_PTR(argv[0]);
-  ED_object_base_free_and_unlink_no_indirect_check(bmain, scene, object);
+  //ED_object_base_free_and_unlink_no_indirect_check(bmain, scene, object);
+  ED_object_base_free_and_unlink(bmain, scene, object);
   return JS_TRUE;
 }
 
@@ -1090,12 +1091,13 @@ JSValue quickjsfunc_new_object_with_mesh(JSContext *ctx, JSValueConst this_val, 
   struct Object *obedit = NULL;
   struct Mesh *mesh     = NULL;
   JSValue js_object     = 0;
+  const char *name      = NULL;
   // #########################
   C = globalC;
-  //if (argc != 1) {
-  //  js_printf("addmesh> missing arguments[0]: bContext *C\n");
-  //  return JS_FALSE;
-  //}
+  if (argc != 1) {
+    js_printf(__FUNCTION__ "> missing arguments first argument: 'name: string'\n");
+    return JS_FALSE;
+  }
   //if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
   //  js_printf("addmesh> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
   //  return JS_FALSE;
@@ -1104,9 +1106,12 @@ JSValue quickjsfunc_new_object_with_mesh(JSContext *ctx, JSValueConst this_val, 
   bmain = CTX_data_main(C);
   scene = CTX_data_scene(C);
   view_layer = CTX_data_view_layer(C);
-  obedit = BKE_object_add(bmain, /*scene,*/ view_layer, OB_MESH, "xxx");
-  mesh = (struct Mesh *)obedit->data;
 
+  name = JS_ToCString(quickjs_ctx, argv[0]);
+  obedit = BKE_object_add(bmain, /*scene,*/ view_layer, OB_MESH, name);
+  JS_FreeCString(quickjs_ctx, name);
+  mesh = (struct Mesh *)obedit->data;
+  
   mesh->totvert = 4; /* total number of vertices */
   mesh->mvert   = (struct MVert *)CustomData_add_layer(&mesh->vdata, CD_MVERT, CD_CALLOC, NULL, mesh->totvert);
   // 0
@@ -1163,9 +1168,18 @@ JSValue quickjsfunc_thingsHaveChanged(JSContext *ctx, JSValueConst this_val, int
   bmain = CTX_data_main(C);
   scene = CTX_data_scene(C);
   /* Tell blender things have changed */
-  DEG_id_tag_update(&scene->id, /*DEG_TAG_COPY_ON_WRITE*/0);
+  //DEG_id_tag_update(&scene->id, /*DEG_TAG_COPY_ON_WRITE*/0);
   DEG_relations_tag_update(bmain);
-  WM_event_add_notifier(C, NC_OBJECT | ND_TRANSFORM, NULL);
+  WM_event_add_notifier(C, NC_OBJECT | ND_TRANSFORM | ND_SPACE_OUTLINER, NULL);
+  // Updates hierarchy
+#if 0
+  DEG_relations_tag_update(bmain);
+  //DEG_id_tag_update(&scene->id, ID_RECALC_SELECT);
+  DEG_id_tag_update(&scene->id, 0);
+  ED_outliner_select_sync_from_object_tag(C);
+  WM_event_add_notifier(C, NC_SCENE | ND_OB_ACTIVE, scene);
+  WM_event_add_notifier(C, NC_SCENE | ND_LAYER_CONTENT, scene);
+#endif
   return JS_UNDEFINED;
 }
 
