@@ -47,14 +47,22 @@ extern "C" {
   #define __js_printf_like(A, B) /* */
 #endif
 
-#define JS_BOOL int
+#define JS_BOOL char
 
 typedef struct JSRuntime JSRuntime;
 typedef struct JSContext JSContext;
 typedef struct JSObject JSObject;
 typedef struct JSClass JSClass;
-typedef uint32_t JSClassID;
-typedef uint32_t JSAtom;
+
+//typedef __int32 int32_t;
+//typedef unsigned __int32 uint32_t;
+#define int32_t __int32
+#define uint32_t unsigned __int32
+
+//typedef uint32_t JSClassID;
+//typedef uint32_t JSAtom;
+#define JSAtom uint32_t
+#define JSClassID uint32_t
 
 #ifdef CONFIG_STORAGE
 typedef enum JS_PERSISTENT_STATUS {
@@ -562,16 +570,16 @@ JSValue JS_AtomToValue(JSContext *ctx, JSAtom atom);
 JSValue JS_AtomToString(JSContext *ctx, JSAtom atom);
 const char *JS_AtomToCString(JSContext *ctx, JSAtom atom);
 JSAtom JS_ValueToAtom(JSContext *ctx, JSValueConst val);
-int    JS_AtomIsArrayIndex(JSContext *ctx, uint32_t *pval, JSAtom atom);
+JS_BOOL JS_AtomIsArrayIndex(JSContext *ctx, uint32_t *pval, JSAtom atom);
 
 /* object class support */
 
 typedef struct JSPropertyEnum {
     JS_BOOL is_enumerable;
     JSAtom atom;
-} JSPropertyEnum;
+} JSPropertyEnum_t;
 
-void js_free_prop_enum(JSContext *ctx, JSPropertyEnum *tab, uint32_t len);
+void js_free_prop_enum(JSContext *ctx, JSPropertyEnum_t *tab, uint32_t len);
 
 typedef struct JSPropertyDescriptor {
     int flags;
@@ -591,9 +599,7 @@ typedef struct JSClassExoticMethods {
     /* '*ptab' should hold the '*plen' property keys. Return 0 if OK,
        -1 if exception. The 'is_enumerable' field is ignored.
     */
-    int (*get_own_property_names)(JSContext *ctx, JSPropertyEnum **ptab,
-                                  uint32_t *plen,
-                                  JSValueConst obj);
+    int (*get_own_property_names)(JSContext *ctx, JSPropertyEnum_t **ptab, uint32_t *plen, JSValueConst obj);
     /* return < 0 if exception, or TRUE/FALSE */
     int (*delete_property)(JSContext *ctx, JSValueConst obj, JSAtom prop);
     /* return < 0 if exception or TRUE/FALSE */
@@ -920,46 +926,28 @@ int JS_CopyDataProperties(JSContext *ctx, JSValueConst target, JSValueConst sour
 /* set theJSPropertyEnum.is_enumerable field */
 #define JS_GPN_SET_ENUM     (1 << 5)
 
-int JS_GetOwnPropertyNames(JSContext *ctx, JSPropertyEnum **ptab,
-                           uint32_t *plen, JSValueConst obj, int flags);
-int JS_GetOwnProperty(JSContext *ctx, JSPropertyDescriptor *desc,
-                      JSValueConst obj, JSAtom prop);
+int JS_GetOwnPropertyNames(JSContext *ctx, JSPropertyEnum_t **ptab, uint32_t *plen, JSValueConst obj, int flags);
+int JS_GetOwnProperty(JSContext *ctx, JSPropertyDescriptor *desc, JSValueConst obj, JSAtom prop);
 
-JSValue JS_Call(JSContext *ctx, JSValueConst func_obj, JSValueConst this_obj,
-                int argc, JSValueConst *argv);
-JSValue JS_Invoke(JSContext *ctx, JSValueConst this_val, JSAtom atom,
-                  int argc, JSValueConst *argv);
-JSValue JS_CallConstructor(JSContext *ctx, JSValueConst func_obj,
-                           int argc, JSValueConst *argv);
-JSValue JS_CallConstructor2(JSContext *ctx, JSValueConst func_obj,
-                            JSValueConst new_target,
-                            int argc, JSValueConst *argv);
+JSValue JS_Call(JSContext *ctx, JSValueConst func_obj, JSValueConst this_obj, int argc, JSValueConst *argv);
+JSValue JS_Invoke(JSContext *ctx, JSValueConst this_val, JSAtom atom, int argc, JSValueConst *argv);
+JSValue JS_CallConstructor(JSContext *ctx, JSValueConst func_obj, int argc, JSValueConst *argv);
+JSValue JS_CallConstructor2(JSContext *ctx, JSValueConst func_obj, JSValueConst new_target, int argc, JSValueConst *argv);
 JS_BOOL JS_DetectModule(const char *input, size_t input_len);
 /* 'input' must be zero terminated i.e. input[input_len] = '\0'. */
-JSValue JS_Eval(JSContext *ctx, const char *input, size_t input_len,
-                const char *filename, int eval_flags);
-JSValue JS_Eval2(JSContext *ctx, const char *input, size_t input_len,
-                const char *filename, int eval_flags, int line_no);
+JSValue JS_Eval(JSContext *ctx, const char *input, size_t input_len, const char *filename, int eval_flags);
+JSValue JS_Eval2(JSContext *ctx, const char *input, size_t input_len, const char *filename, int eval_flags, int line_no);
 
 JSValue JS_EvalFunction(JSContext *ctx, JSValue fun_obj);
 /* same as JS_Eval() but with an explicit 'this_obj' parameter */
-JSValue JS_EvalThis(JSContext *ctx, JSValueConst this_obj,
-                    const char *input, size_t input_len,
-                    const char *filename, int eval_flags);
+JSValue JS_EvalThis(JSContext *ctx, JSValueConst this_obj, const char *input, size_t input_len, const char *filename, int eval_flags);
 JSValue JS_GetGlobalObject(JSContext *ctx);
 int JS_IsInstanceOf(JSContext *ctx, JSValueConst val, JSValueConst obj);
-int JS_DefineProperty(JSContext *ctx, JSValueConst this_obj,
-                      JSAtom prop, JSValueConst val,
-                      JSValueConst getter, JSValueConst setter, int flags);
-int JS_DefinePropertyValue(JSContext *ctx, JSValueConst this_obj,
-                           JSAtom prop, JSValue val, int flags);
-int JS_DefinePropertyValueUint32(JSContext *ctx, JSValueConst this_obj,
-                                 uint32_t idx, JSValue val, int flags);
-int JS_DefinePropertyValueStr(JSContext *ctx, JSValueConst this_obj,
-                              const char *prop, JSValue val, int flags);
-int JS_DefinePropertyGetSet(JSContext *ctx, JSValueConst this_obj,
-                            JSAtom prop, JSValue getter, JSValue setter,
-                            int flags);
+int JS_DefineProperty(JSContext *ctx, JSValueConst this_obj, JSAtom prop, JSValueConst val, JSValueConst getter, JSValueConst setter, int flags);
+int JS_DefinePropertyValue(JSContext *ctx, JSValueConst this_obj, JSAtom prop, JSValue val, int flags);
+int JS_DefinePropertyValueUint32(JSContext *ctx, JSValueConst this_obj, uint32_t idx, JSValue val, int flags);
+int JS_DefinePropertyValueStr(JSContext *ctx, JSValueConst this_obj, const char *prop, JSValue val, int flags);
+int JS_DefinePropertyGetSet(JSContext *ctx, JSValueConst this_obj, JSAtom prop, JSValue getter, JSValue setter, int flags);
 void JS_SetOpaque(JSValue obj, void *opaque);
 void *JS_GetOpaque(JSValueConst obj, JSClassID class_id);
 void *JS_GetOpaque2(JSContext *ctx, JSValueConst obj, JSClassID class_id);
@@ -1098,8 +1086,7 @@ typedef union JSCFunctionType {
     JSValue (*setter)(JSContext *ctx, JSValueConst this_val, JSValueConst val);
     JSValue (*getter_magic)(JSContext *ctx, JSValueConst this_val, int magic);
     JSValue (*setter_magic)(JSContext *ctx, JSValueConst this_val, JSValueConst val, int magic);
-    JSValue (*iterator_next)(JSContext *ctx, JSValueConst this_val,
-                             int argc, JSValueConst *argv, int *pdone, int magic);
+    JSValue (*iterator_next)(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv, JS_BOOL *pdone, int magic);
 } JSCFunctionType;
 
 JSValue JS_NewCFunction2(JSContext *ctx, JSCFunction *func,
