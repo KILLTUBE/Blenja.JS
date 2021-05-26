@@ -86,6 +86,7 @@ JSValue quickjsfunc_object_update          (JSContext *ctx, JSValueConst this_va
 JSValue quickjsfunc_object_children        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_object_name_get        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_object_mesh_get        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_object_reference_set   (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 
 void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
   JSValue global = 0;
@@ -173,6 +174,7 @@ void text_duktape_init() {
   quickjs_add_function("object_children"        , quickjsfunc_object_children         , 1);
   quickjs_add_function("object_name_get"        , quickjsfunc_object_name_get         , 1);
   quickjs_add_function("object_mesh_get"        , quickjsfunc_object_mesh_get         , 1);
+  quickjs_add_function("object_reference_set"   , quickjsfunc_object_reference_set    , 2);
   
   quickjs_add_function("thingsHaveChanged"      , quickjsfunc_thingsHaveChanged       , 0);
   
@@ -1083,6 +1085,7 @@ JSValue quickjsfunc_object_destroy(JSContext *ctx, JSValueConst this_val, int ar
   object = JS_VALUE_GET_PTR(argv[0]);
   //ED_object_base_free_and_unlink_no_indirect_check(bmain, scene, object);
   ED_object_base_free_and_unlink(bmain, scene, object);
+  //BKE_id_multi_tagged_delete
   return JS_TRUE;
 }
 
@@ -1317,9 +1320,49 @@ JSValue quickjsfunc_object_mesh_get(JSContext *ctx, JSValueConst this_val, int a
   }
   object = JS_VALUE_GET_PTR(argv[0]);
   if (object->type != OB_MESH) {
-    return false;
+    return JS_FALSE;
   }
   mesh = (struct Mesh *)object->data;
   js_ret = JS_MKPTR(JS_TAG_INT, mesh);
   return js_ret;
+}
+
+JSValue quickjsfunc_object_reference_set(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Object *object = NULL;
+  // #########################
+  if (argc != 2) {
+    js_printf(__FUNCTION__ "> expecting two arguments (object pointer and entity reference)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  if (!JS_IsObject(argv[1])) {
+    js_printf(__FUNCTION__ "> arguments[1] needs to be a reference to an entity\n");
+    return JS_FALSE;
+  }
+  object = JS_VALUE_GET_PTR(argv[0]);
+  object->quickjs = argv[1];
+  // Increase ref count, because C owns a pointer to it now
+  JS_DupValue(quickjs_ctx, argv[1]);
+  return JS_TRUE;
+}
+
+// Called from blender\editors\object\object_add.c
+void quickjs_delete_object(Object *object) {
+  JSValue js_entity  = 0;
+  JSValue js_destroy = 0;
+  // #########################
+  js_entity = object->quickjs;
+  //js_printf(__FUNCTION__ "> js_entity = %llu\n", js_entity);
+  if (js_entity == 0) {
+    return;
+  }
+  // TODO: Implement JS_CallMethod
+  js_destroy = JS_GetPropertyStr(quickjs_ctx, js_entity, "_destroy");
+  JS_Call(quickjs_ctx, js_destroy, js_entity, 0, NULL);
+  JS_FreeValue(quickjs_ctx, js_destroy);
+  // Decrease ref count, because C stopped owning the pointer
+  JS_FreeValue(quickjs_ctx, js_entity);
 }

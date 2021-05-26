@@ -1972,6 +1972,10 @@ static int object_delete_exec(bContext *C, wmOperator *op)
       DEG_id_tag_update(&gpd->id, ID_RECALC_TRANSFORM | ID_RECALC_GEOMETRY);
     }
 
+    // TODO: Add properly via headers/CMake
+    void quickjs_delete_object(Object *object);
+    quickjs_delete_object(ob);
+
     /* Use multi tagged delete if `use_global=True`, or the object is used only in one scene. */
     if (use_global || ID_REAL_USERS(ob) <= 1) {
       ob->id.tag |= LIB_TAG_DOIT;
@@ -2005,7 +2009,14 @@ static int object_delete_exec(bContext *C, wmOperator *op)
     BKE_id_multi_tagged_delete(bmain);
   }
 
-  BKE_reportf(op->reports, RPT_INFO, "Deleted %u object(s)", (changed_count + tagged_count));
+  BKE_reportf(
+    op->reports,
+    RPT_INFO,
+    "Deleted %u object(s), changed_count=%u tagged_count=%u",
+    (changed_count + tagged_count),
+    changed_count,
+    tagged_count
+  );
 
   /* delete has to handle all open scenes */
   BKE_main_id_tag_listbase(&bmain->scenes, LIB_TAG_DOIT, true);

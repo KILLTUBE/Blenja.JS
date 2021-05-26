@@ -15,6 +15,8 @@ class Entity {
   constructor(name = "Untitled") {
     this.pointer = new_object_with_mesh(name);
     this.position = new Float32Array(object_position(this.pointer));
+    // Set reference in `struct Object *` itself
+    object_reference_set(this.pointer, this);
     thingsHaveChanged();
   }
 
@@ -28,9 +30,18 @@ class Entity {
     return true;
   }
 
+  // This method is called from Blender when the Entity is about to destroyed
+  _destroy() {
+    this.pointer = 0;
+  }
+
   update() {
+    if (this.pointer == 0) {
+      return false;
+    }
     object_update(this.pointer);
     thingsHaveChanged();
+    return true;
   }
 
   get children() {
@@ -38,6 +49,9 @@ class Entity {
     var pointers;
     var i;
     // #########################
+    if (this.pointer == 0) {
+      return undefined;
+    }
     pointers = object_children(this.pointer);
     for (i=0; i<pointers.length; i++) {
       pointer = pointers[i];
@@ -49,10 +63,13 @@ class Entity {
 
   get name() {
     var tmp;
-    // will be something like "OBxxx"
+    // #########################
+    if (this.pointer == 0) {
+      return undefined;
+    }
+    // will be something like 'OBxxx'
     tmp = object_name_get(this.pointer);
-    tmp = tmp.slice(2); // remove "OB"
-
+    tmp = tmp.slice(2); // remove 'OB'
     return tmp;
   }
 
@@ -60,6 +77,9 @@ class Entity {
     var mesh;
     var meshPointer;
     // #########################
+    if (this.pointer == 0) {
+      return undefined;
+    }
     meshPointer = object_mesh_get(this.pointer);
     if (meshPointer === false) {
       return undefined;
