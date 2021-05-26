@@ -87,6 +87,7 @@ JSValue quickjsfunc_object_children        (JSContext *ctx, JSValueConst this_va
 JSValue quickjsfunc_object_name_get        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_object_mesh_get        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_object_reference_set   (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_selectedObjects        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 
 void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
   JSValue global = 0;
@@ -175,6 +176,7 @@ void text_duktape_init() {
   quickjs_add_function("object_name_get"        , quickjsfunc_object_name_get         , 1);
   quickjs_add_function("object_mesh_get"        , quickjsfunc_object_mesh_get         , 1);
   quickjs_add_function("object_reference_set"   , quickjsfunc_object_reference_set    , 2);
+  quickjs_add_function("_selectedObjects"       , quickjsfunc_selectedObjects         , 0);
   
   quickjs_add_function("thingsHaveChanged"      , quickjsfunc_thingsHaveChanged       , 0);
   
@@ -1347,6 +1349,26 @@ JSValue quickjsfunc_object_reference_set(JSContext *ctx, JSValueConst this_val, 
   // Increase ref count, because C owns a pointer to it now
   JS_DupValue(quickjs_ctx, argv[1]);
   return JS_TRUE;
+}
+
+// JS name: _selectedObjects (needs wrapper)
+JSValue quickjsfunc_selectedObjects(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  bContext *C           = NULL;
+  struct Object *object = NULL;
+  //int i                 = 0;
+  JSValue js_array      = 0;
+  JSValue js_pointer    = 0;
+  // #########################
+  C = globalC;
+  js_array = JS_NewArray(quickjs_ctx);
+  CTX_DATA_BEGIN (C, Object *, object, selected_objects) {
+    //printf("selectedObjects()[%d]: %s\n", i, object->id.name + 2);
+    //i++;
+    js_pointer = JS_MKPTR(JS_TAG_INT, object);
+    js_array_push(quickjs_ctx, js_array, 1, &js_pointer, false);
+  }
+  CTX_DATA_END;
+  return js_array;
 }
 
 // Called from blender\editors\object\object_add.c

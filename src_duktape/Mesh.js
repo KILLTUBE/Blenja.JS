@@ -52,4 +52,8 @@ class Mesh {
   get totvert() {
     return mesh_totvert(this.pointer);
   }
+
+  toString() {
+    return `Mesh(totvert=${this.totvert})`;
+  }
 }
