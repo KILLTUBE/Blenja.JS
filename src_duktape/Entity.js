@@ -37,6 +37,7 @@ class Entity {
     var pointer;
     var pointers;
     var i;
+    // #########################
     pointers = object_children(this.pointer);
     for (i=0; i<pointers.length; i++) {
       pointer = pointers[i];
@@ -53,6 +54,18 @@ class Entity {
     tmp = tmp.slice(2); // remove "OB"
 
     return tmp;
+  }
+
+  get mesh() {
+    var mesh;
+    var meshPointer;
+    // #########################
+    meshPointer = object_mesh_get(this.pointer);
+    if (meshPointer === false) {
+      return undefined;
+    }
+    mesh = Mesh.fromPointer(meshPointer);
+    return mesh;
   }
 
   toString() {

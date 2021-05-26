@@ -85,6 +85,7 @@ JSValue quickjsfunc_object_position        (JSContext *ctx, JSValueConst this_va
 JSValue quickjsfunc_object_update          (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_object_children        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_object_name_get        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_object_mesh_get        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 
 void quickjs_add_function(char *name, JSCFunction *funcPtr, int length) {
   JSValue global = 0;
@@ -171,6 +172,8 @@ void text_duktape_init() {
   quickjs_add_function("object_update"          , quickjsfunc_object_update           , 1);
   quickjs_add_function("object_children"        , quickjsfunc_object_children         , 1);
   quickjs_add_function("object_name_get"        , quickjsfunc_object_name_get         , 1);
+  quickjs_add_function("object_mesh_get"        , quickjsfunc_object_mesh_get         , 1);
+  
   quickjs_add_function("thingsHaveChanged"      , quickjsfunc_thingsHaveChanged       , 0);
   
            
@@ -1194,11 +1197,11 @@ JSValue quickjsfunc_object_position(JSContext *ctx, JSValueConst this_val, int a
   bmain = CTX_data_main(C);
   scene = CTX_data_scene(C);
   if (argc != 1) {
-    js_printf("object_position> expecting one argument (object pointer)\n");
+    js_printf(__FUNCTION__ "> expecting one argument (object pointer)\n");
     return JS_FALSE;
   }
   if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
-    js_printf("object_position> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
     return JS_FALSE;
   }
   object = JS_VALUE_GET_PTR(argv[0]);
@@ -1216,11 +1219,11 @@ JSValue quickjsfunc_object_update(JSContext *ctx, JSValueConst this_val, int arg
   bmain = CTX_data_main(C);
   scene = CTX_data_scene(C);
   if (argc != 1) {
-    js_printf("object_position> expecting one argument (object pointer)\n");
+    js_printf(__FUNCTION__ "> expecting one argument (object pointer)\n");
     return JS_FALSE;
   }
   if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
-    js_printf("object_position> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
     return JS_FALSE;
   }
   object = JS_VALUE_GET_PTR(argv[0]);
@@ -1244,11 +1247,11 @@ JSValue quickjsfunc_object_children(JSContext *ctx, JSValueConst this_val, int a
   bmain = CTX_data_main(C);
   scene = CTX_data_scene(C);
   if (argc != 1) {
-    js_printf("object_position> expecting one argument (object pointer)\n");
+    js_printf(__FUNCTION__ "> expecting one argument (object pointer)\n");
     return JS_FALSE;
   }
   if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
-    js_printf("object_position> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
     return JS_FALSE;
   }
   object = JS_VALUE_GET_PTR(argv[0]);
@@ -1275,14 +1278,48 @@ JSValue quickjsfunc_object_name_get(JSContext *ctx, JSValueConst this_val, int a
   bmain = CTX_data_main(C);
   scene = CTX_data_scene(C);
   if (argc != 1) {
-    js_printf("object_name_get> expecting one argument (object pointer)\n");
+    js_printf(__FUNCTION__ "> expecting one argument (object pointer)\n");
     return JS_FALSE;
   }
   if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
-    js_printf("object_name_get> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
     return JS_FALSE;
   }
   object = JS_VALUE_GET_PTR(argv[0]);
   js_ret = JS_NewString(quickjs_ctx, object->id.name);
+  return js_ret;
+}
+
+/*
+e = getSelection() or selectedMesh()
+e = new Entity("aaa")
+mesh = e.mesh
+mesh.vertices[0].x += 1 etc.
+*/
+JSValue quickjsfunc_object_mesh_get(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  bContext *C             = NULL;
+  Main *bmain             = NULL;
+  Scene *scene            = NULL;
+  struct Object *object   = NULL;
+  struct Mesh *mesh       = NULL;
+  JSValue js_ret          = 0;
+  // #########################
+  C = globalC;
+  bmain = CTX_data_main(C);
+  scene = CTX_data_scene(C);
+  if (argc != 1) {
+    js_printf(__FUNCTION__ "> expecting one argument (object pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  object = JS_VALUE_GET_PTR(argv[0]);
+  if (object->type != OB_MESH) {
+    return false;
+  }
+  mesh = (struct Mesh *)object->data;
+  js_ret = JS_MKPTR(JS_TAG_INT, mesh);
   return js_ret;
 }

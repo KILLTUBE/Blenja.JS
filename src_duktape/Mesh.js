@@ -21,6 +21,15 @@ class Mesh {
     this.initVertices();
   }
 
+  static fromPointer(meshPointer) {
+    var mesh;
+    mesh = Object.create(Mesh.prototype);
+    mesh.pointer = meshPointer;
+    mesh.vertices = [];
+    mesh.initVertices();
+    return mesh;
+  }
+
   initVertices() {
     var i;
     var n;
