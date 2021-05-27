@@ -52,8 +52,32 @@ class Mesh {
   get totvert() {
     return mesh_totvert(this.pointer);
   }
+  get totedge() {
+    return mesh_totedge(this.pointer);
+  }
+  get totface() {
+    return mesh_totface(this.pointer);
+  }
+  get totselect() {
+    return mesh_totselect(this.pointer);
+  }
+  get totpoly() {
+    return mesh_totpoly(this.pointer);
+  }
+  get totloop() {
+    return mesh_totloop(this.pointer);
+  }
 
   toString() {
-    return `Mesh(totvert=${this.totvert})`;
+    var ret;
+    ret = 'Mesh { ';
+    ret += `totvert: ${this.totvert}, `;
+    ret += `totedge: ${this.totedge}, `;
+    ret += `totface: ${this.totface}, `;
+    ret += `totselect: ${this.totselect}, `;
+    ret += `totpoly: ${this.totpoly}, `;
+    ret += `totloop: ${this.totloop} `;
+    ret += '}';
+    return ret;
   }
 }

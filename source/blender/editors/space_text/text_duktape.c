@@ -78,6 +78,11 @@ JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_va
 JSValue quickjsfunc_mesh_get_vertid_xyz_val(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_mesh_update            (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_mesh_totvert           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_mesh_totedge           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_mesh_totface           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_mesh_totselect         (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_mesh_totpoly           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_mesh_totloop           (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_object_destroy         (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_new_object_with_mesh   (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_thingsHaveChanged      (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
@@ -168,6 +173,11 @@ void text_duktape_init() {
   quickjs_add_function("mesh_get_vertid_xyz_val", quickjsfunc_mesh_get_vertid_xyz_val , 3);
   quickjs_add_function("mesh_update"            , quickjsfunc_mesh_update             , 1);
   quickjs_add_function("mesh_totvert"           , quickjsfunc_mesh_totvert            , 1);
+  quickjs_add_function("mesh_totedge"           , quickjsfunc_mesh_totedge            , 1);
+  quickjs_add_function("mesh_totface"           , quickjsfunc_mesh_totface            , 1);
+  quickjs_add_function("mesh_totselect"         , quickjsfunc_mesh_totselect          , 1);
+  quickjs_add_function("mesh_totpoly"           , quickjsfunc_mesh_totpoly            , 1);
+  quickjs_add_function("mesh_totloop"           , quickjsfunc_mesh_totloop            , 1);
   quickjs_add_function("object_destroy"         , quickjsfunc_object_destroy          , 1);
   quickjs_add_function("new_object_with_mesh"   , quickjsfunc_new_object_with_mesh    , 0);
   quickjs_add_function("object_position"        , quickjsfunc_object_position         , 1);
@@ -1050,6 +1060,86 @@ JSValue quickjsfunc_mesh_totvert(JSContext *ctx, JSValueConst this_val, int argc
   // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
   mesh = JS_VALUE_GET_PTR(argv[0]);
   return JS_MKVAL(JS_TAG_INT, mesh->totvert);
+}
+
+JSValue quickjsfunc_mesh_totedge(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  // #########################
+  if (argc != 1) {
+    js_printf(__FUNCTION__ "> expecting one argument (mesh pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh = JS_VALUE_GET_PTR(argv[0]);
+  return JS_MKVAL(JS_TAG_INT, mesh->totedge);
+}
+
+JSValue quickjsfunc_mesh_totface(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  // #########################
+  if (argc != 1) {
+    js_printf(__FUNCTION__ "> expecting one argument (mesh pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh = JS_VALUE_GET_PTR(argv[0]);
+  return JS_MKVAL(JS_TAG_INT, mesh->totface);
+}
+
+JSValue quickjsfunc_mesh_totselect(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  // #########################
+  if (argc != 1) {
+    js_printf(__FUNCTION__ "> expecting one argument (mesh pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh = JS_VALUE_GET_PTR(argv[0]);
+  return JS_MKVAL(JS_TAG_INT, mesh->totselect);
+}
+
+JSValue quickjsfunc_mesh_totpoly(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  // #########################
+  if (argc != 1) {
+    js_printf(__FUNCTION__ "> expecting one argument (mesh pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh = JS_VALUE_GET_PTR(argv[0]);
+  return JS_MKVAL(JS_TAG_INT, mesh->totpoly);
+}
+
+JSValue quickjsfunc_mesh_totloop(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  // #########################
+  if (argc != 1) {
+    js_printf(__FUNCTION__ "> expecting one argument (mesh pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh = JS_VALUE_GET_PTR(argv[0]);
+  return JS_MKVAL(JS_TAG_INT, mesh->totloop);
 }
 
 // Copy from blender\editors\object\object_add.c
