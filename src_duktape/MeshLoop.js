@@ -14,21 +14,10 @@ class MeshLoop {
     this.i = i;
   }
 
-  get e() {
-    return mesh_get_loopid_ev(this.mesh.pointer, this.i, 0);
-  }
-
-  get v() {
-    return mesh_get_loopid_ev(this.mesh.pointer, this.i, 1);
-  }
-
-  set e(value) {
-    return mesh_set_loopid_ev(this.mesh.pointer, this.i, 0, value);
-  }
-
-  set v(value) {
-    return mesh_set_loopid_ev(this.mesh.pointer, this.i, 1, value);
-  }
+  get e(     ) { return mesh_get_loopid_ev(this.mesh.pointer, this.i, 0       ); }
+  get v(     ) { return mesh_get_loopid_ev(this.mesh.pointer, this.i, 1       ); }
+  set e(value) { return mesh_set_loopid_ev(this.mesh.pointer, this.i, 0, value); }
+  set v(value) { return mesh_set_loopid_ev(this.mesh.pointer, this.i, 1, value); }
 
   toString() {
     var tmp;

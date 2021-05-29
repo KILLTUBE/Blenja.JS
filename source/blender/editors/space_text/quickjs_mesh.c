@@ -191,6 +191,105 @@ JSValue quickjsfunc_mesh_get_loopid_ev(JSContext *ctx, JSValueConst this_val, in
   return ret;
 }
 
+
+// mesh->medges v1
+
+JSValue quickjsfunc_mesh_set_edgeid_v1(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int edgeid        = 0;
+  float val         = 0.0;
+  int valTag        = 0;
+  // #########################
+  if (argc != 3) {
+    js_printf(__FUNCTION__ "> expecting four arguments (mesh pointer, edgeid, new 'unsigned int' value)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  edgeid = JS_VALUE_GET_INT(argv[1]);
+  valTag = JS_VALUE_GET_TAG(argv[2]);
+  if (valTag == JS_TAG_INT) {
+    val = JS_VALUE_GET_INT(argv[2]);
+  } else if (valTag == JS_TAG_FLOAT64) {
+    val = JS_VALUE_GET_FLOAT64(argv[2]);
+  }
+  mesh->medge[edgeid].v1 = val;
+  return JS_TRUE;
+}
+
+JSValue quickjsfunc_mesh_get_edgeid_v1(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int edgeid        = 0;
+  JSValue ret       = 0;
+  // #########################
+  if (argc != 2) {
+    js_printf(__FUNCTION__ "> expecting three arguments (mesh pointer, edgeid)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  edgeid = JS_VALUE_GET_INT(argv[1]);
+  ret = JS_MKVAL(JS_TAG_INT, mesh->medge[edgeid].v1);
+  return ret;
+}
+
+
+// mesh->medges v2
+
+JSValue quickjsfunc_mesh_set_edgeid_v2(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int edgeid        = 0;
+  float val         = 0.0;
+  int valTag        = 0;
+  // #########################
+  if (argc != 3) {
+    js_printf(__FUNCTION__ "> expecting four arguments (mesh pointer, edgeid, new 'unsigned int' value)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  edgeid = JS_VALUE_GET_INT(argv[1]);
+  valTag = JS_VALUE_GET_TAG(argv[2]);
+  if (valTag == JS_TAG_INT) {
+    val = JS_VALUE_GET_INT(argv[2]);
+  } else if (valTag == JS_TAG_FLOAT64) {
+    val = JS_VALUE_GET_FLOAT64(argv[2]);
+  }
+  mesh->medge[edgeid].v2 = val;
+  return JS_TRUE;
+}
+
+JSValue quickjsfunc_mesh_get_edgeid_v2(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int edgeid        = 0;
+  JSValue ret       = 0;
+  // #########################
+  if (argc != 2) {
+    js_printf(__FUNCTION__ "> expecting three arguments (mesh pointer, edgeid)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  edgeid = JS_VALUE_GET_INT(argv[1]);
+  ret = JS_MKVAL(JS_TAG_INT, mesh->medge[edgeid].v2);
+  return ret;
+}
 JSValue quickjsfunc_mesh_update(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
   struct Mesh *mesh = NULL;
   // #########################
@@ -313,6 +412,10 @@ void quickjs_funcs_mesh() {
   quickjs_add_function("mesh_get_vertid_xyz", quickjsfunc_mesh_get_vertid_xyz     , 3);
   quickjs_add_function("mesh_set_loopid_ev" , quickjsfunc_mesh_set_loopid_ev      , 4);
   quickjs_add_function("mesh_get_loopid_ev" , quickjsfunc_mesh_get_loopid_ev      , 3);
+  quickjs_add_function("mesh_set_edgeid_v1" , quickjsfunc_mesh_set_edgeid_v1      , 3);
+  quickjs_add_function("mesh_get_edgeid_v1" , quickjsfunc_mesh_get_edgeid_v1      , 2);
+  quickjs_add_function("mesh_set_edgeid_v2" , quickjsfunc_mesh_set_edgeid_v2      , 3);
+  quickjs_add_function("mesh_get_edgeid_v2" , quickjsfunc_mesh_get_edgeid_v2      , 2);
   quickjs_add_function("mesh_update"        , quickjsfunc_mesh_update             , 1);
   quickjs_add_function("mesh_totvert"       , quickjsfunc_mesh_totvert            , 1);
   quickjs_add_function("mesh_totedge"       , quickjsfunc_mesh_totedge            , 1);
