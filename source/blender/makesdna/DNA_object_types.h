@@ -442,7 +442,7 @@ typedef struct Object {
 
   ObjectLineArt lineart;
 
-  unsigned long long quickjs; // Tagged JSValue without including quickjs.h everywhere
+  char quickjs[8]; // Tagged JSValue without including quickjs.h everywhere
 
   /** Runtime evaluation data (keep last). */
   Object_Runtime runtime;

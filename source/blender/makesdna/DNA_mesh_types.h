@@ -229,6 +229,9 @@ typedef struct Mesh {
    * default and Face Sets can be used without affecting the color of the mesh. */
   int face_sets_color_default;
 
+  char quickjs[8]; // Tagged JSValue without including quickjs.h everywhere
+
+  /** Runtime evaluation data (keep last). */
   Mesh_Runtime runtime;
 } Mesh;
 

@@ -1435,7 +1435,7 @@ JSValue quickjsfunc_object_reference_set(JSContext *ctx, JSValueConst this_val, 
     return JS_FALSE;
   }
   object = JS_VALUE_GET_PTR(argv[0]);
-  object->quickjs = argv[1];
+  *(JSValue *)&object->quickjs = argv[1];
   // Increase ref count, because C owns a pointer to it now
   JS_DupValue(quickjs_ctx, argv[1]);
   return JS_TRUE;
@@ -1462,11 +1462,12 @@ JSValue quickjsfunc_selectedObjects(JSContext *ctx, JSValueConst this_val, int a
 }
 
 // Called from blender\editors\object\object_add.c
+// TODO: When deleted from Outliner, this is not called yet
 void quickjs_delete_object(Object *object) {
   JSValue js_entity  = 0;
   JSValue js_destroy = 0;
   // #########################
-  js_entity = object->quickjs;
+  js_entity = *(JSValue *)&object->quickjs;
   //js_printf(__FUNCTION__ "> js_entity = %llu\n", js_entity);
   if (js_entity == 0) {
     return;

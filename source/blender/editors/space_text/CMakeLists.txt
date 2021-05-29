@@ -54,6 +54,14 @@ set(SRC
   text_format.h
   text_intern.h
   text_duktape.h
+  
+  # QuickJS
+  quickjs_mesh.c
+  quickjs_mesh.h
+  quickjs_object.c
+  quickjs_object.h
+  quickjs_utils.c
+  quickjs_utils.h
 )
 
 set(LIB
