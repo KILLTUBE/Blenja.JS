@@ -157,32 +157,13 @@ void text_duktape_init() {
   quickjs_add_function("exe"                    , quickjsfunc_exe                     , 0);
   quickjs_add_function("exedir"                 , quickjsfunc_exedir                  , 0);
   quickjs_add_function("reload"                 , quickjsfunc_reload                  , 0);
-  // quickjs_mesh.c
-  quickjs_add_function("addmesh"                , quickjsfunc_addmesh                 , 0);
-  quickjs_add_function("mesh_set_vertid_xyz_val", quickjsfunc_mesh_set_vertid_xyz_val , 4);
-  quickjs_add_function("mesh_get_vertid_xyz_val", quickjsfunc_mesh_get_vertid_xyz_val , 3);
-  quickjs_add_function("mesh_update"            , quickjsfunc_mesh_update             , 1);
-  quickjs_add_function("mesh_totvert"           , quickjsfunc_mesh_totvert            , 1);
-  quickjs_add_function("mesh_totedge"           , quickjsfunc_mesh_totedge            , 1);
-  quickjs_add_function("mesh_totface"           , quickjsfunc_mesh_totface            , 1);
-  quickjs_add_function("mesh_totselect"         , quickjsfunc_mesh_totselect          , 1);
-  quickjs_add_function("mesh_totpoly"           , quickjsfunc_mesh_totpoly            , 1);
-  quickjs_add_function("mesh_totloop"           , quickjsfunc_mesh_totloop            , 1);
   quickjs_add_function("object_destroy"         , quickjsfunc_object_destroy          , 1);
-  quickjs_add_function("new_object_with_mesh"   , quickjsfunc_new_object_with_mesh    , 0);
-  // quickjs_object.c
-  quickjs_add_function("object_position"        , quickjsfunc_object_position         , 1);
-  quickjs_add_function("object_update"          , quickjsfunc_object_update           , 1);
-  quickjs_add_function("object_children"        , quickjsfunc_object_children         , 1);
-  quickjs_add_function("object_name_get"        , quickjsfunc_object_name_get         , 1);
-  quickjs_add_function("object_mesh_get"        , quickjsfunc_object_mesh_get         , 1);
-  quickjs_add_function("object_reference_set"   , quickjsfunc_object_reference_set    , 2);
-  quickjs_add_function("_selectedObjects"       , quickjsfunc_selectedObjects         , 0);
-  
+  quickjs_add_function("new_object_with_mesh"   , quickjsfunc_new_object_with_mesh    , 0);  
   quickjs_add_function("thingsHaveChanged"      , quickjsfunc_thingsHaveChanged       , 0);
-  
-           
-     
+
+  quickjs_funcs_mesh();
+  quickjs_funcs_object();
+
   JS_FreeValue(quickjs_ctx, global_obj);
 
   // Reload (files)

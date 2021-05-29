@@ -79,7 +79,9 @@ JSValue quickjsfunc_addmesh(JSContext *ctx, JSValueConst this_val, int argc, JSV
   return mesh;
 }
 
-JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+// mesh->mvert
+
+JSValue quickjsfunc_mesh_set_vertid_xyz(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
   struct Mesh *mesh = NULL;
   int vertid        = 0;
   int xyz           = 0;
@@ -108,13 +110,13 @@ JSValue quickjsfunc_mesh_set_vertid_xyz_val(JSContext *ctx, JSValueConst this_va
   return JS_TRUE;
 }
 
-JSValue quickjsfunc_mesh_get_vertid_xyz_val(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+JSValue quickjsfunc_mesh_get_vertid_xyz(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
   struct Mesh *mesh = NULL;
   int vertid        = 0;
   int xyz           = 0;
   // #########################
   if (argc != 3) {
-    js_printf(__FUNCTION__ "> expecting three arguments (mesh pointer, vertid, 0-2 for xyz)\n");
+    js_printf(__FUNCTION__ "> expecting three arguments (mesh pointer, vertid, 0-2 for x/y/z)\n");
     return JS_FALSE;
   }
   if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
@@ -126,6 +128,67 @@ JSValue quickjsfunc_mesh_get_vertid_xyz_val(JSContext *ctx, JSValueConst this_va
   vertid = JS_VALUE_GET_INT(argv[1]);
   xyz    = JS_VALUE_GET_INT(argv[2]);
   return JS_NewFloat64(quickjs_ctx, mesh->mvert[vertid].co[xyz]);
+}
+
+// mesh->mloop
+
+JSValue quickjsfunc_mesh_set_loopid_ev(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int loopid        = 0;
+  int e_or_v        = 0;
+  float val         = 0.0;
+  int valTag        = 0;
+  // #########################
+  if (argc != 4) {
+    js_printf(__FUNCTION__ "> expecting four arguments (mesh pointer, vertid, 0-1 for 'e' or 'v', new float value)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  loopid = JS_VALUE_GET_INT(argv[1]);
+  e_or_v = JS_VALUE_GET_INT(argv[2]);
+  valTag = JS_VALUE_GET_TAG(argv[3]);
+  if (valTag == JS_TAG_INT) {
+    val = JS_VALUE_GET_INT(argv[3]);
+  } else if (valTag == JS_TAG_FLOAT64) {
+    val = JS_VALUE_GET_FLOAT64(argv[3]);
+  }
+  if (e_or_v == 0) {
+    mesh->mloop[loopid].e = val;
+  } else {
+    mesh->mloop[loopid].v = val;
+  }
+  return JS_TRUE;
+}
+
+JSValue quickjsfunc_mesh_get_loopid_ev(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int loopid        = 0;
+  int e_or_v        = 0;
+  JSValue ret       = 0;
+  // #########################
+  if (argc != 3) {
+    js_printf(__FUNCTION__ "> expecting three arguments (mesh pointer, loopid, 0-1 for 'e' or 'v')\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  loopid = JS_VALUE_GET_INT(argv[1]);
+  e_or_v = JS_VALUE_GET_INT(argv[2]);
+  if (e_or_v == 0) {
+    ret = JS_MKVAL(JS_TAG_INT, mesh->mloop[loopid].e);
+  } else {
+    ret = JS_MKVAL(JS_TAG_INT, mesh->mloop[loopid].v);
+  }
+  return ret;
 }
 
 JSValue quickjsfunc_mesh_update(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
@@ -242,4 +305,19 @@ JSValue quickjsfunc_mesh_totloop(JSContext *ctx, JSValueConst this_val, int argc
   // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
   mesh = JS_VALUE_GET_PTR(argv[0]);
   return JS_MKVAL(JS_TAG_INT, mesh->totloop);
+}
+
+void quickjs_funcs_mesh() {
+  quickjs_add_function("addmesh"            , quickjsfunc_addmesh                 , 0);
+  quickjs_add_function("mesh_set_vertid_xyz", quickjsfunc_mesh_set_vertid_xyz     , 4);
+  quickjs_add_function("mesh_get_vertid_xyz", quickjsfunc_mesh_get_vertid_xyz     , 3);
+  quickjs_add_function("mesh_set_loopid_ev" , quickjsfunc_mesh_set_loopid_ev      , 4);
+  quickjs_add_function("mesh_get_loopid_ev" , quickjsfunc_mesh_get_loopid_ev      , 3);
+  quickjs_add_function("mesh_update"        , quickjsfunc_mesh_update             , 1);
+  quickjs_add_function("mesh_totvert"       , quickjsfunc_mesh_totvert            , 1);
+  quickjs_add_function("mesh_totedge"       , quickjsfunc_mesh_totedge            , 1);
+  quickjs_add_function("mesh_totface"       , quickjsfunc_mesh_totface            , 1);
+  quickjs_add_function("mesh_totselect"     , quickjsfunc_mesh_totselect          , 1);
+  quickjs_add_function("mesh_totpoly"       , quickjsfunc_mesh_totpoly            , 1);
+  quickjs_add_function("mesh_totloop"       , quickjsfunc_mesh_totloop            , 1);
 }

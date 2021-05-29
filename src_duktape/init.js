@@ -1,6 +1,7 @@
 function main() {
     require('Console.js');
     require('MeshVertex.js');
+    require('MeshLoop.js');
     require('Mesh.js');
     require('Entity.js');
     require('selectedObjects.js');

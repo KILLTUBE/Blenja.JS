@@ -114,6 +114,8 @@ typedef void (*text_duktape_lines_each_callback)(int i, char *str);
 duk_bool_t js_push_global_by_name(char *name);
 void text_duktape_eval(const char *code);
 void js_add_function(char *name, duk_c_function func, duk_idx_t nargs);
+JSValue quickjs_log(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+void quickjs_add_function(char *name, JSCFunction *funcPtr, int length);
 void text_duktape_init();
 void text_duktape_lines_each(text_duktape_lines_each_callback cb);
 void quickjs_lines_each(text_duktape_lines_each_callback cb);
@@ -135,4 +137,9 @@ int jsfunc_JS_NewContext(duk_context *ctx);
 int jsfunc_JS_Eval(duk_context *ctx);
 void quickjs_eval(char *buf);
 void quickjs_set_bContext(bContext *C);
+
+
+void quickjs_funcs_mesh();
+void quickjs_funcs_object();
+
 #endif

@@ -210,3 +210,13 @@ void quickjs_delete_object(Object *object) {
   // Decrease ref count, because C stopped owning the pointer
   JS_FreeValue(quickjs_ctx, js_entity);
 }
+
+void quickjs_funcs_object() {
+  quickjs_add_function("object_position"        , quickjsfunc_object_position         , 1);
+  quickjs_add_function("object_update"          , quickjsfunc_object_update           , 1);
+  quickjs_add_function("object_children"        , quickjsfunc_object_children         , 1);
+  quickjs_add_function("object_name_get"        , quickjsfunc_object_name_get         , 1);
+  quickjs_add_function("object_mesh_get"        , quickjsfunc_object_mesh_get         , 1);
+  quickjs_add_function("object_reference_set"   , quickjsfunc_object_reference_set    , 2);
+  quickjs_add_function("_selectedObjects"       , quickjsfunc_selectedObjects         , 0);
+}

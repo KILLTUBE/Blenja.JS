@@ -1,32 +1,47 @@
 /**
- * @example
- * ```
+ * @example ```
  *   mesh = new Mesh();
- *   mesh.vertices[0].x = Math.random() * 2
- *   mesh.vertices[0].y = Math.random() * 2
- *   mesh.vertices[0].z = Math.random() * 2
- *   mesh.vertices[1].x = Math.random() * 4
- *   mesh.vertices[1].y = Math.random() * 4
- *   mesh.vertices[1].z = Math.random() * 4
+ *   mesh.vertices[0].x = Math.random() * 2;
+ *   mesh.vertices[0].y = Math.random() * 2;
+ *   mesh.vertices[0].z = Math.random() * 2;
+ *   mesh.vertices[1].x = Math.random() * 4;
+ *   mesh.vertices[1].y = Math.random() * 4;
+ *   mesh.vertices[1].z = Math.random() * 4;
  *   mesh.update()
  * ```
+ * 
+ * @example ```
+ *   mesh = new Mesh();
+ *   mesh.describe();
+ * ```
+ * 
+ * @example ```
+ *   console.clear();
+ *   selectedObject().mesh.describe();
+ * ```
+ * 
  */
 
 class Mesh {
-  pointer = 0;
+  pointer  = 0;
   vertices = [];
+  loops    = [];
 
   constructor() {
     this.pointer = addmesh();
     this.initVertices();
+    this.initLoops();
   }
 
   static fromPointer(meshPointer) {
     var mesh;
+    // #########################
     mesh = Object.create(Mesh.prototype);
-    mesh.pointer = meshPointer;
+    mesh.pointer  = meshPointer;
     mesh.vertices = [];
+    mesh.loops    = [];
     mesh.initVertices();
+    mesh.initLoops();
     return mesh;
   }
 
@@ -38,6 +53,17 @@ class Mesh {
     this.vertices.length = n;
     for (i=0; i<n; i++) {
       this.vertices[i] = new MeshVertex(this, i);
+    }
+  }
+
+  initLoops() {
+    var i;
+    var n;
+    // #########################
+    n = this.totloop;
+    this.loops.length = n;
+    for (i=0; i<n; i++) {
+      this.loops[i] = new MeshLoop(this, i);
     }
   }
 
@@ -66,6 +92,30 @@ class Mesh {
   }
   get totloop() {
     return mesh_totloop(this.pointer);
+  }
+
+  describe() {
+    var i;
+    var n;
+    var vertices;
+    var vertex;
+    var loops;
+    var loop;
+    // #########################
+    console.log(`Vertices (${this.totvert}):`);
+    vertices = this.vertices;
+    n = vertices.length;
+    for (i=0; i<n; i++) {
+      vertex = vertices[i];
+      console.log(`[${vertex.x}, ${vertex.x}, ${vertex.z}]`);
+    }
+    console.log(`Loops (${this.totloop}):`);
+    loops = this.loops;
+    n = loops.length;
+    for (i=0; i<n; i++) {
+      loop = loops[i];
+      console.log(`{v: ${loop.v}, e: ${loop.e}}`);
+    }
   }
 
   toString() {
