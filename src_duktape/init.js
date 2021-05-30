@@ -3,6 +3,7 @@ function main() {
     require('MeshVertex.js');
     require('MeshLoop.js');
     require('MeshEdge.js');
+    require('MeshPoly.js');
     require('Mesh.js');
     require('Entity.js');
     require('selectedObjects.js');

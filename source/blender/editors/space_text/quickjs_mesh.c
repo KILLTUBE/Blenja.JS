@@ -290,6 +290,208 @@ JSValue quickjsfunc_mesh_get_edgeid_v2(JSContext *ctx, JSValueConst this_val, in
   ret = JS_MKVAL(JS_TAG_INT, mesh->medge[edgeid].v2);
   return ret;
 }
+
+
+//typedef struct MPoly {
+//  /** Offset into loop array and number of loops in the face. */
+//  int loopstart;
+//  /** Keep signed since we need to subtract when getting the previous loop. */
+//  int totloop;
+//  short mat_nr;
+//  char flag, _pad;
+//} MPoly;
+
+JSValue quickjsfunc_mesh_set_polyid_loopstart(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int polyid        = 0;
+  float val         = 0.0;
+  int valTag        = 0;
+  // #########################
+  if (argc != 3) {
+    js_printf(__FUNCTION__ "> expecting four arguments (mesh pointer, polyid, new 'int' value)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  polyid = JS_VALUE_GET_INT(argv[1]);
+  valTag = JS_VALUE_GET_TAG(argv[2]);
+  if (valTag == JS_TAG_INT) {
+    val = JS_VALUE_GET_INT(argv[2]);
+  } else if (valTag == JS_TAG_FLOAT64) {
+    val = JS_VALUE_GET_FLOAT64(argv[2]);
+  }
+  mesh->mpoly[polyid].loopstart = val;
+  return JS_TRUE;
+}
+
+JSValue quickjsfunc_mesh_get_polyid_loopstart(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int polyid        = 0;
+  JSValue ret       = 0;
+  // #########################
+  if (argc != 2) {
+    js_printf(__FUNCTION__ "> expecting three arguments (mesh pointer, polyid)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  polyid = JS_VALUE_GET_INT(argv[1]);
+  ret = JS_MKVAL(JS_TAG_INT, mesh->mpoly[polyid].loopstart);
+  return ret;
+}
+
+JSValue quickjsfunc_mesh_set_polyid_totloop(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int polyid        = 0;
+  float val         = 0.0;
+  int valTag        = 0;
+  // #########################
+  if (argc != 3) {
+    js_printf(__FUNCTION__ "> expecting four arguments (mesh pointer, polyid, new 'int' value)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  polyid = JS_VALUE_GET_INT(argv[1]);
+  valTag = JS_VALUE_GET_TAG(argv[2]);
+  if (valTag == JS_TAG_INT) {
+    val = JS_VALUE_GET_INT(argv[2]);
+  } else if (valTag == JS_TAG_FLOAT64) {
+    val = JS_VALUE_GET_FLOAT64(argv[2]);
+  }
+  mesh->mpoly[polyid].totloop = val;
+  return JS_TRUE;
+}
+
+JSValue quickjsfunc_mesh_get_polyid_totloop(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int polyid        = 0;
+  JSValue ret       = 0;
+  // #########################
+  if (argc != 2) {
+    js_printf(__FUNCTION__ "> expecting three arguments (mesh pointer, polyid)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  polyid = JS_VALUE_GET_INT(argv[1]);
+  ret = JS_MKVAL(JS_TAG_INT, mesh->mpoly[polyid].totloop);
+  return ret;
+}
+
+// mpoly->mat_nr
+JSValue quickjsfunc_mesh_set_polyid_mat_nr(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int polyid        = 0;
+  float val         = 0.0;
+  int valTag        = 0;
+  // #########################
+  if (argc != 3) {
+    js_printf(__FUNCTION__ "> expecting four arguments (mesh pointer, polyid, new 'int' value)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  polyid = JS_VALUE_GET_INT(argv[1]);
+  valTag = JS_VALUE_GET_TAG(argv[2]);
+  if (valTag == JS_TAG_INT) {
+    val = JS_VALUE_GET_INT(argv[2]);
+  } else if (valTag == JS_TAG_FLOAT64) {
+    val = JS_VALUE_GET_FLOAT64(argv[2]);
+  }
+  mesh->mpoly[polyid].mat_nr = val;
+  return JS_TRUE;
+}
+
+JSValue quickjsfunc_mesh_get_polyid_mat_nr(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int polyid        = 0;
+  JSValue ret       = 0;
+  // #########################
+  if (argc != 2) {
+    js_printf(__FUNCTION__ "> expecting three arguments (mesh pointer, polyid)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  polyid = JS_VALUE_GET_INT(argv[1]);
+  ret = JS_MKVAL(JS_TAG_INT, mesh->mpoly[polyid].mat_nr);
+  return ret;
+}
+
+// mpoly[polyid]->flag
+
+JSValue quickjsfunc_mesh_set_polyid_flag(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int polyid        = 0;
+  float val         = 0.0;
+  int valTag        = 0;
+  // #########################
+  if (argc != 3) {
+    js_printf(__FUNCTION__ "> expecting four arguments (mesh pointer, polyid, new 'int' value)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  polyid = JS_VALUE_GET_INT(argv[1]);
+  valTag = JS_VALUE_GET_TAG(argv[2]);
+  if (valTag == JS_TAG_INT) {
+    val = JS_VALUE_GET_INT(argv[2]);
+  } else if (valTag == JS_TAG_FLOAT64) {
+    val = JS_VALUE_GET_FLOAT64(argv[2]);
+  }
+  mesh->mpoly[polyid].flag = val;
+  return JS_TRUE;
+}
+
+JSValue quickjsfunc_mesh_get_polyid_flag(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int polyid        = 0;
+  JSValue ret       = 0;
+  // #########################
+  if (argc != 2) {
+    js_printf(__FUNCTION__ "> expecting three arguments (mesh pointer, polyid)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh   = JS_VALUE_GET_PTR(argv[0]);
+  polyid = JS_VALUE_GET_INT(argv[1]);
+  ret = JS_MKVAL(JS_TAG_INT, mesh->mpoly[polyid].flag);
+  return ret;
+}
+
 JSValue quickjsfunc_mesh_update(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
   struct Mesh *mesh = NULL;
   // #########################
@@ -408,14 +610,27 @@ JSValue quickjsfunc_mesh_totloop(JSContext *ctx, JSValueConst this_val, int argc
 
 void quickjs_funcs_mesh() {
   quickjs_add_function("addmesh"            , quickjsfunc_addmesh                 , 0);
+  // mvert
   quickjs_add_function("mesh_set_vertid_xyz", quickjsfunc_mesh_set_vertid_xyz     , 4);
   quickjs_add_function("mesh_get_vertid_xyz", quickjsfunc_mesh_get_vertid_xyz     , 3);
+  // mloop
   quickjs_add_function("mesh_set_loopid_ev" , quickjsfunc_mesh_set_loopid_ev      , 4);
   quickjs_add_function("mesh_get_loopid_ev" , quickjsfunc_mesh_get_loopid_ev      , 3);
+  // medge
   quickjs_add_function("mesh_set_edgeid_v1" , quickjsfunc_mesh_set_edgeid_v1      , 3);
   quickjs_add_function("mesh_get_edgeid_v1" , quickjsfunc_mesh_get_edgeid_v1      , 2);
   quickjs_add_function("mesh_set_edgeid_v2" , quickjsfunc_mesh_set_edgeid_v2      , 3);
   quickjs_add_function("mesh_get_edgeid_v2" , quickjsfunc_mesh_get_edgeid_v2      , 2);
+  // mpoly
+  quickjs_add_function("mesh_set_polyid_loopstart", quickjsfunc_mesh_set_polyid_loopstart, 3);
+  quickjs_add_function("mesh_get_polyid_loopstart", quickjsfunc_mesh_get_polyid_loopstart, 2);
+  quickjs_add_function("mesh_set_polyid_totloop"  , quickjsfunc_mesh_set_polyid_totloop  , 3);
+  quickjs_add_function("mesh_get_polyid_totloop"  , quickjsfunc_mesh_get_polyid_totloop  , 2);
+  quickjs_add_function("mesh_set_polyid_mat_nr"   , quickjsfunc_mesh_set_polyid_mat_nr   , 3);
+  quickjs_add_function("mesh_get_polyid_mat_nr"   , quickjsfunc_mesh_get_polyid_mat_nr   , 2);
+  quickjs_add_function("mesh_set_polyid_flag"     , quickjsfunc_mesh_set_polyid_flag     , 3);
+  quickjs_add_function("mesh_get_polyid_flag"     , quickjsfunc_mesh_get_polyid_flag     , 2);
+  // ...
   quickjs_add_function("mesh_update"        , quickjsfunc_mesh_update             , 1);
   quickjs_add_function("mesh_totvert"       , quickjsfunc_mesh_totvert            , 1);
   quickjs_add_function("mesh_totedge"       , quickjsfunc_mesh_totedge            , 1);
