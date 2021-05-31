@@ -1,6 +1,7 @@
 #include <quickjs.h>
 
 JSValue quickjsfunc_addmesh                  (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_mesh_from_buffers        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_mesh_set_vertid_xyz      (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_mesh_get_vertid_xyz      (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_mesh_set_edgeid_v1       (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);

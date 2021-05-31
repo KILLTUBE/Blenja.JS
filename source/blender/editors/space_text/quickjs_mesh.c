@@ -1,13 +1,16 @@
 #include "text_duktape.h"
 #include <quickjs.h>
 
-JSValue addmesh(bContext *C) {
+JSValue quickjsfunc_mesh_add(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  JSValue js_mesh;
   Main *bmain;
   Scene *scene;
   ViewLayer *view_layer;
   struct Object *obedit;
   struct Mesh *mesh;
+  bContext *C;
   // #########################
+  C = globalC;
   bmain = CTX_data_main(C);
   scene = CTX_data_scene(C);
   view_layer = CTX_data_view_layer(C);
@@ -53,30 +56,104 @@ JSValue addmesh(bContext *C) {
   /* BKE_mesh_validate will do the tedious work for us. */
   BKE_mesh_calc_normals(mesh);
   BKE_mesh_validate(mesh, false, false);
+  /* Tell blender things have changed */
+  DEG_id_tag_update(&scene->id, /*DEG_TAG_COPY_ON_WRITE*/0);
+  DEG_relations_tag_update(bmain);
+  WM_event_add_notifier(C, NC_OBJECT | ND_TRANSFORM, NULL);
+  // Return mesh as pointer
+  js_mesh = JS_MKPTR(JS_TAG_INT, mesh);
+  return js_mesh;
+}
+
+
+JSValue quickjsfunc_mesh_from_buffers(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  JSValue js_mesh;
+  Main *bmain;
+  Scene *scene;
+  ViewLayer *view_layer;
+  struct Object *obedit;
+  struct Mesh *mesh;
+  bContext *C;
+  size_t psize_vertices;
+  size_t psize_loops;
+  size_t psize_polygons;
+  float *vertices = NULL;
+  int *loops      = NULL;
+  int *polygons   = NULL;
+  int vertices_n  = 0;
+  int loops_n     = 0;
+  int polygons_n  = 0;
+  int i           = 0;
+  // #########################
+  if (argc != 3) {
+    js_printf(__FUNCTION__ "> expecting four arguments (vertices, loops, polygons)\n");
+    return JS_FALSE;
+  }
+  
+  JSValue js_vertices_arraybuffer;
+  JSValue js_loops_arraybuffer;
+  JSValue js_polygons_arraybuffer;
+  js_vertices_arraybuffer = JS_GetTypedArrayBuffer(quickjs_ctx, argv[0], NULL, NULL, NULL);
+  js_loops_arraybuffer    = JS_GetTypedArrayBuffer(quickjs_ctx, argv[1], NULL, NULL, NULL);
+  js_polygons_arraybuffer = JS_GetTypedArrayBuffer(quickjs_ctx, argv[2], NULL, NULL, NULL);
+  vertices = (float *) JS_GetArrayBuffer(quickjs_ctx, &psize_vertices, js_vertices_arraybuffer);
+  loops    = (int *)   JS_GetArrayBuffer(quickjs_ctx, &psize_loops   , js_loops_arraybuffer   );
+  polygons = (int *)   JS_GetArrayBuffer(quickjs_ctx, &psize_polygons, js_polygons_arraybuffer);
+  vertices_n = psize_vertices / 12; // 3 floats = 3 * 4 = 12
+  loops_n    = psize_loops    /  4; // 1 int    = 1 * 4 =  4
+  polygons_n = psize_polygons /  8; // 2 ints   = 2 * 4 =  8
+  printf("vertices psize=%d pointer=%p n=%d\n", psize_vertices, vertices, vertices_n);
+  printf("loops    psize=%d pointer=%p n=%d\n", psize_loops   , loops   , loops_n   );
+  printf("polygons psize=%d pointer=%p n=%d\n", psize_polygons, polygons, polygons_n);
+
+  //if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+  //  js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+  //  return JS_FALSE;
+  //}
+
+
+  C = globalC;
+  bmain = CTX_data_main(C);
+  scene = CTX_data_scene(C);
+  view_layer = CTX_data_view_layer(C);
+  obedit = BKE_object_add(bmain, /*scene,*/ view_layer, OB_MESH, "xxx");
+  mesh = (struct Mesh *)obedit->data;
+
+  mesh->totvert = vertices_n; /* total number of vertices */
+  mesh->mvert   = (struct MVert *)CustomData_add_layer(&mesh->vdata, CD_MVERT, CD_CALLOC, NULL, mesh->totvert);
+
+  for (i=0; i<mesh->totvert; i++) {
+    mesh->mvert[i].co[0] = vertices[i * 3 + 0];
+    mesh->mvert[i].co[1] = vertices[i * 3 + 1];
+    mesh->mvert[i].co[2] = vertices[i * 3 + 2];
+  }
+  
+  mesh->totpoly = polygons_n;  /* this is the total number of faces */
+  mesh->totloop = loops_n;  /* this is the total number of vertices required to describe the faces */
+            /* Since we're making a single quad here, this value is 4, if we had chosen */
+            /* to make 2 triangles, we would have needed 6 to properly describe both triangles */
+
+  mesh->mpoly   = (MPoly *)CustomData_add_layer(&mesh->pdata, CD_MPOLY, CD_CALLOC, NULL, mesh->totpoly);
+  mesh->mloop   = (MLoop *)CustomData_add_layer(&mesh->ldata, CD_MLOOP, CD_CALLOC, NULL, mesh->totloop);
+  
+  for (i=0; i<mesh->totloop; i++) {
+    mesh->mloop[i].v = loops[i];
+  }
+  
+  for (i=0; i<mesh->totpoly; i++) {
+    mesh->mpoly[i].loopstart = polygons[i * 2 + 0];
+    mesh->mpoly[i].totloop   = polygons[i * 2 + 1];
+  }
+  /* Too lazy to add normals + edges myself, edges seem really needed */
+  /* BKE_mesh_validate will do the tedious work for us. */
+  BKE_mesh_calc_normals(mesh);
+  BKE_mesh_validate(mesh, false, false);
 
   /* Tell blender things have changed */
   DEG_id_tag_update(&scene->id, /*DEG_TAG_COPY_ON_WRITE*/0);
   DEG_relations_tag_update(bmain);
   WM_event_add_notifier(C, NC_OBJECT | ND_TRANSFORM, NULL);
   return JS_MKPTR(JS_TAG_INT, mesh);
-}
-
-JSValue quickjsfunc_addmesh(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
-  JSValue mesh;
-  //bContext *C;
-  // #########################
-  //if (argc != 1) {
-  //  js_printf("addmesh> missing arguments[0]: bContext *C\n");
-  //  return JS_FALSE;
-  //}
-  //if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
-  //  js_printf("addmesh> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
-  //  return JS_FALSE;
-  //}
-  //C = JS_VALUE_GET_PTR(argv[0]);
-  //mesh = addmesh(C);
-  mesh = addmesh(globalC);
-  return mesh;
 }
 
 // mesh->mvert
@@ -609,7 +686,8 @@ JSValue quickjsfunc_mesh_totloop(JSContext *ctx, JSValueConst this_val, int argc
 }
 
 void quickjs_funcs_mesh() {
-  quickjs_add_function("addmesh"            , quickjsfunc_addmesh                 , 0);
+  quickjs_add_function("mesh_add"           , quickjsfunc_mesh_add                , 0);
+  quickjs_add_function("mesh_from_buffers"  , quickjsfunc_mesh_from_buffers       , 3);
   // mvert
   quickjs_add_function("mesh_set_vertid_xyz", quickjsfunc_mesh_set_vertid_xyz     , 4);
   quickjs_add_function("mesh_get_vertid_xyz", quickjsfunc_mesh_get_vertid_xyz     , 3);

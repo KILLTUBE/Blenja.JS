@@ -7,6 +7,7 @@ function main() {
     require('Mesh.js');
     require('Entity.js');
     require('selectedObjects.js');
+    require('icosahedron.js');
 }
 
 try {

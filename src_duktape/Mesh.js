@@ -30,7 +30,7 @@ class Mesh {
   polygons = [];
 
   constructor() {
-    this.pointer = addmesh();
+    this.pointer = mesh_add();
     this.initVertices();
     this.initLoops();
     this.initEdges();
@@ -51,6 +51,10 @@ class Mesh {
     mesh.initEdges();
     mesh.initPolygons();
     return mesh;
+  }
+
+  static fromBuffers() {
+    
   }
 
   initVertices() {
@@ -141,28 +145,28 @@ class Mesh {
     n = vertices.length;
     for (i=0; i<n; i++) {
       vertex = vertices[i];
-      console.log(`[${vertex.x}, ${vertex.x}, ${vertex.z}]`);
+      console.log(`i=${i} [${vertex.x}, ${vertex.x}, ${vertex.z}]`);
     }
     console.log(`Loops (${this.totloop}):`);
     loops = this.loops;
     n = loops.length;
     for (i=0; i<n; i++) {
       loop = loops[i];
-      console.log(`{v: ${loop.v}, e: ${loop.e}}`);
+      console.log(`i=${i} {v: ${loop.v}, e: ${loop.e}}`);
     }
     console.log(`Edges (${this.totedge}):`);
     edges = this.edges;
     n = edges.length;
     for (i=0; i<n; i++) {
       edge = edges[i];
-      console.log(`{v1: ${edge.v1}, v2: ${edge.v2}}`);
+      console.log(`i=${i} {v1: ${edge.v1}, v2: ${edge.v2}}`);
     }
     console.log(`Polygons (${this.totpoly}):`);
     polygons = this.polygons;
     n = polygons.length;
     for (i=0; i<n; i++) {
       polygon = polygons[i];
-      console.log(`{loopstart: ${polygon.loopstart}, totloop: ${polygon.totloop}, mat_nr: ${polygon.mat_nr}, flag: ${polygon.flag}}`);
+      console.log(`i=${i} {loopstart: ${polygon.loopstart}, totloop: ${polygon.totloop}, mat_nr: ${polygon.mat_nr}, flag: ${polygon.flag}}`);
     }
   }
 
