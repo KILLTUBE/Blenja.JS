@@ -53,8 +53,10 @@ class Mesh {
     return mesh;
   }
 
-  static fromBuffers() {
-    
+  static fromBuffers(vertices, loops, polygons) {
+    var meshPointer;
+    meshPointer = mesh_from_buffers(vertices, loops, polygons);
+    return Mesh.fromPointer(meshPointer);
   }
 
   initVertices() {

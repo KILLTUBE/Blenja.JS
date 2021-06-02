@@ -1,5 +1,6 @@
 function main() {
     require('Console.js');
+    require('ganja.js');
     require('MeshVertex.js');
     require('MeshLoop.js');
     require('MeshEdge.js');
@@ -7,7 +8,10 @@ function main() {
     require('Mesh.js');
     require('Entity.js');
     require('selectedObjects.js');
-    require('icosahedron.js');
+    require('Icosahedron.js');
+    require('Performance.js');
+    require('Blender.js');
+    require('Body.js');
 }
 
 try {
