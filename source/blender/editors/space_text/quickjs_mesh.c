@@ -89,7 +89,6 @@ JSValue quickjsfunc_mesh_from_buffers(JSContext *ctx, JSValueConst this_val, int
     js_printf(__FUNCTION__ "> expecting four arguments (vertices, loops, polygons)\n");
     return JS_FALSE;
   }
-  
   JSValue js_vertices_arraybuffer;
   JSValue js_loops_arraybuffer;
   JSValue js_polygons_arraybuffer;
@@ -102,9 +101,9 @@ JSValue quickjsfunc_mesh_from_buffers(JSContext *ctx, JSValueConst this_val, int
   vertices_n = psize_vertices / 12; // 3 floats = 3 * 4 = 12
   loops_n    = psize_loops    /  4; // 1 int    = 1 * 4 =  4
   polygons_n = psize_polygons /  8; // 2 ints   = 2 * 4 =  8
-  printf("vertices psize=%d pointer=%p n=%d\n", psize_vertices, vertices, vertices_n);
-  printf("loops    psize=%d pointer=%p n=%d\n", psize_loops   , loops   , loops_n   );
-  printf("polygons psize=%d pointer=%p n=%d\n", psize_polygons, polygons, polygons_n);
+  //printf("vertices psize=%zu pointer=%p n=%d\n", psize_vertices, vertices, vertices_n);
+  //printf("loops    psize=%zu pointer=%p n=%d\n", psize_loops   , loops   , loops_n   );
+  //printf("polygons psize=%zu pointer=%p n=%d\n", psize_polygons, polygons, polygons_n);
 
   //if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
   //  js_printf(__FUNCTION__ "> missing arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
