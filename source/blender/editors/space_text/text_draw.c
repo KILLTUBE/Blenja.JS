@@ -1574,7 +1574,35 @@ struct Closure_draw_text_main {
 
 struct Closure_draw_text_main closure;
 
-void cb(int i, char *str) {
+void quickjs_type_to_color(int font_id, const char *type) {
+  if (!strcmp(type, "number")) {
+    UI_FontThemeColor(font_id, TH_SYNTAX_N); // lightblue
+  } else if (!strcmp(type, "string")) {
+    UI_FontThemeColor(font_id, TH_LINENUMBERS); // white
+  } else if (!strcmp(type, "array")) {
+    UI_FontThemeColor(font_id, TH_SYNTAX_B); // indian redish
+  } else if (!strcmp(type, "object")) {
+    UI_FontThemeColor(font_id, TH_SYNTAX_V); // aliceblue
+  } else if (!strcmp(type, "bool")) {
+    UI_FontThemeColor(font_id, TH_SYNTAX_R); // dark orange
+  } else if (!strcmp(type, "error")) {
+    UI_FontThemeColor(font_id, TH_SYNTAX_C); // greenish
+  } else if (!strcmp(type, "exception")) {
+    UI_FontThemeColor(font_id, TH_SYNTAX_L); // greenish
+  } else if (!strcmp(type, "function")) {
+    UI_FontThemeColor(font_id, TH_SYNTAX_D); // greenish
+  } else if (!strcmp(type, "null")) {
+    UI_FontThemeColor(font_id, TH_HILITE); // red
+  } else if (!strcmp(type, "undefined")) {
+    UI_FontThemeColor(font_id, TH_SYNTAX_S); // orange
+  } else if (!strcmp(type, "symbol")) {
+    UI_FontThemeColor(font_id, TH_ACTIVE_OBJECT); // TODO: `Symbol("ASD")` prints nothing currently
+  } else {
+    UI_FontThemeColor(font_id, TH_BACK);
+  }
+}
+
+void cb(int i, const char *str, const char *type) {
   short center;
   short top;
   SpaceText *st;
@@ -1588,6 +1616,7 @@ void cb(int i, char *str) {
   top = region->sizey;
   top -= 50; // Start under the menu bar
   center = region->sizex / 2;
+  quickjs_type_to_color(tdc->font_id, type);
   text_font_draw(tdc, center, top - 20 * i, str);
 }
 
@@ -1750,31 +1779,27 @@ void draw_text_main(SpaceText *st, ARegion *region)
   /* draw_documentation(st, region); - No longer supported */
   draw_suggestion_list(st, &tdc, region);
 
-  char str[128];
 
   if (ctx == NULL) {
     text_duktape_init();
   }
 
-
+#if 0
+  // Nice for quick debugging
+  char str[128];
   duk_eval_string(ctx, "1 + Math.random()");
   float duknum = duk_get_number(ctx, -1);
-
-  
   const char *dukstr = NULL;
   duk_get_global_string(ctx, "lines");
   dukstr = duk_to_string(ctx, -1);
   duk_pop(ctx); // pop string or undefined
-
-  
   snprintf(str, sizeof(str), "rand() = %d, duk = %f", rand(), duknum);
   text_font_draw(&tdc, 20, 20, str);
-
   snprintf(str, sizeof(str), "dukstr = %s", dukstr);
   text_font_draw(&tdc, 20, 50, str);
-
   snprintf(str, sizeof(str), "region> winx=%d winy=%d sizex=%d sizey=%d", region->winx, region->winy, region->sizex, region->sizey);
   text_font_draw(&tdc, 200, 200, str);
+#endif
 
   closure.st = st;
   closure.region = region;

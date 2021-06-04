@@ -185,14 +185,47 @@ void text_duktape_lines_each(text_duktape_lines_each_callback cb) {
   }
 }
 
+// "number" | "string" | "array" | "object" | "bool" | "error" | "exception" | "function" | "null" | "undefined" | "symbol" | "(untested type)"
+const char *quickjs_typeof(JSContext *ctx, JSValue value) {
+  const char *type = NULL;
+  // #########################
+  if (JS_IsNumber(value)) {
+    type = "number";
+  } else if (JS_IsString(value)) {
+    type = "string";
+  } else if (JS_IsArray(quickjs_ctx, value)) {
+    type = "array";
+  } else if (JS_IsObject(value)) {
+    type = "object";
+  } else if (JS_IsBool(value)) {
+    type = "bool";
+  } else if (JS_IsError(quickjs_ctx, value)) {
+    type = "error";
+  } else if (JS_IsException(value)) {
+    type = "exception";
+  } else if (JS_IsFunction(quickjs_ctx, value)) {
+    type = "function";
+  } else if (JS_IsNull(value)) {
+    type = "null";
+  } else if (JS_IsUndefined(value)) {
+    type = "undefined";
+  } else if (JS_IsSymbol(value)) {
+    type = "symbol";
+  } else {
+    type = "(untested type)";
+  }
+  return type;
+}
+
 void quickjs_lines_each(text_duktape_lines_each_callback cb) {
-  const char *str = NULL;
-  int32_t i       = 0;
-  int64_t n       = 0;
-  JSValue line    = 0;
-  JSValue lines   = 0;
-  JSValue global  = 0;
-  int ret         = 0;
+  const char *str  = NULL;
+  const char *type = NULL;
+  int32_t i        = 0;
+  int64_t n        = 0;
+  JSValue line     = 0;
+  JSValue lines    = 0;
+  JSValue global   = 0;
+  int ret          = 0;
   // #########################
   global = JS_GetGlobalObject(quickjs_ctx);
   lines = JS_GetPropertyStr(quickjs_ctx, global, "lines");
@@ -206,7 +239,8 @@ void quickjs_lines_each(text_duktape_lines_each_callback cb) {
   for (i=0; i<n; i++) {
     line = JS_GetPropertyUint32(quickjs_ctx, lines, i);
     str = JS_ToCString(quickjs_ctx, line);
-    cb(i, str);
+    type = quickjs_typeof(quickjs_ctx, line);
+    cb(i, str, type);
     JS_FreeCString(quickjs_ctx, str);
     JS_FreeValue(quickjs_ctx, line);
   }
