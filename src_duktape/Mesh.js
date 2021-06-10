@@ -59,6 +59,10 @@ class Mesh {
     return Mesh.fromPointer(meshPointer);
   }
 
+  static printRNA() {
+    mesh_rna_print();
+  }
+
   initVertices() {
     var i;
     var n;
@@ -183,5 +187,9 @@ class Mesh {
     ret += `totloop: ${this.totloop} `;
     ret += '}';
     return ret;
+  }
+
+  rna_vertex_color_new(name) {
+    mesh_rna_vertex_color_new(this.pointer, name);
   }
 }

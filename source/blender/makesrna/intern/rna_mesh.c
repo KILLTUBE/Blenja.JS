@@ -1467,7 +1467,7 @@ static int rna_Mesh_tot_face_get(PointerRNA *ptr)
   return me->edit_mesh ? me->edit_mesh->bm->totfacesel : 0;
 }
 
-static PointerRNA rna_Mesh_vertex_color_new(struct Mesh *me, const char *name, const bool do_init)
+PointerRNA rna_Mesh_vertex_color_new(struct Mesh *me, const char *name, const bool do_init)
 {
   PointerRNA ptr;
   CustomData *ldata;

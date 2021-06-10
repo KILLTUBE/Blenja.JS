@@ -684,6 +684,128 @@ JSValue quickjsfunc_mesh_totloop(JSContext *ctx, JSValueConst this_val, int argc
   return JS_MKVAL(JS_TAG_INT, mesh->totloop);
 }
 
+#include "RNA_access.h"
+#include "RNA_define.h"
+#include "RNA_documentation.h"
+#include "RNA_enum_types.h"
+#include "RNA_types.h"
+
+//#define RNA_RUNTIME
+#include "../../source/blender/makesrna/intern/rna_mesh.c"
+//#undef RNA_RUNTIME
+
+#include "../../build2019/source/blender/makesdna/intern/dna_type_offsets.h"
+#include "../../build2019/source/blender/makesrna/intern/RNA_blender.h"
+//#include "../../build2019/source/blender/makesrna/intern/rna_prototypes_gen.h"
+struct PointerRNA VertColors_new_func(struct Mesh *_self, const char * name, bool do_init);
+// Doesn't seem to do anything:
+//VertColors_new_func(mesh, "jscolors", true);
+struct PointerRNA rna_Mesh_vertex_color_new(struct Mesh *_self, const char * name, bool do_init);
+
+/*
+  JS Example: 
+    m = selectedObject().mesh
+    mesh_rna_vertex_color_new(m.pointer, 'jscolors')
+  Or:
+    m = selectedObject().mesh
+    m.rna_vertex_color_new("jscolors2")
+*/
+JSValue quickjsfunc_mesh_rna_vertex_color_new(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  const char *name  = NULL;
+  JSValue *js_name  = 0;
+  // #########################
+  if (argc != 2) {
+    js_printf(__FUNCTION__ "> expecting one argument (mesh pointer, name)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  // TODO: arg checking or implement JS_GetParams("piif", &mesh, &vertid, &xyz, &val);
+  mesh = JS_VALUE_GET_PTR(argv[0]);
+  name = JS_ToCString(quickjs_ctx, argv[1]);
+  rna_Mesh_vertex_color_new(mesh, name, true);
+  JS_FreeCString(quickjs_ctx, name);
+  return JS_UNDEFINED;
+}
+
+// mesh_rna_print()
+// Or: Mesh.printRNA()
+JSValue quickjsfunc_mesh_rna_print(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  //StructRNA *srna;
+  //PropertyRNA *prop;
+  //srna = RNA_def_struct(brna, "Mesh", "ID");
+
+  //Mesh_edges_length(
+  
+
+  //printf("RNA_Mesh.name: %s\n", RNA_Mesh.name);
+  //printf("RNA_MeshVertices.name: %s\n", RNA_MeshVertices.name);
+  printf("struct StructRNA {\n");
+  printf("/* structs are containers of properties */                                                     \n");
+  printf("ContainerRNA cont = {                                                                          \n");
+  printf("  void *next; = %p                                                                             \n", RNA_Mesh.cont.next);
+  printf("  void *prev; = %p                                                                             \n", RNA_Mesh.cont.prev);
+  printf("  struct GHash *prophash; = %p                                                                 \n", RNA_Mesh.cont.prophash);
+  printf("  ListBase properties = { void *first = %p; void *last = %p; }                                 \n", RNA_Mesh.cont.properties.first, RNA_Mesh.cont.properties.last);
+  printf("};                                                                                             \n");
+  printf("/* unique identifier, keep after 'cont' */                                                     \n");
+  printf("const char *identifier = \"%s\";                                                               \n", RNA_Mesh.identifier);
+  printf("/** Python type, this is a subtype of #pyrna_struct_Type                                       \n");
+  printf(" * but used so each struct can have its own type which is useful for subclassing RNA. */       \n");
+  printf("void *py_type = %p;                                                                            \n", RNA_Mesh.py_type);
+  printf("void *blender_type = %p;                                                                       \n", RNA_Mesh.blender_type);
+  printf("/* various options */                                                                          \n");
+  printf("int flag = %d;                                                                                 \n", RNA_Mesh.flag);
+  printf("/* Each StructRNA type can define own tags which properties can set                            \n");
+  printf(" * (PropertyRNA.tags) for changed behavior based on struct-type. */                            \n");
+  printf("const EnumPropertyItem *prop_tag_defines = %p;                                                 \n", RNA_Mesh.prop_tag_defines);
+  printf("/* user readable name */                                                                       \n");
+  printf("const char *name = \"%s\";                                                                     \n", RNA_Mesh.name);
+  printf("/* single line description, displayed in the tooltip for example */                            \n");
+  printf("const char *description = \"%s\";                                                              \n", RNA_Mesh.description);
+  printf("/* context for translation */                                                                  \n");
+  printf("const char *translation_context = \"%s\";                                                      \n", RNA_Mesh.translation_context);
+  printf("/* icon ID */                                                                                  \n");
+  printf("int icon = %d;                                                                                 \n", RNA_Mesh.icon);
+  printf("/* property that defines the name */                                                           \n");
+  printf("PropertyRNA *nameproperty = %p;                                                                \n", RNA_Mesh.nameproperty);
+  printf("/* property to iterate over properties */                                                      \n");
+  printf("PropertyRNA *iteratorproperty = %p;                                                            \n", RNA_Mesh.iteratorproperty);
+  printf("/* struct this is derivedfrom */                                                               \n");
+  printf("struct StructRNA *base = %p;                                                                   \n", RNA_Mesh.base);
+  printf("/* only use for nested structs, where both the parent and child access                         \n");
+  printf(" * the same C Struct but nesting is used for grouping properties.                              \n");
+  printf(" * The parent property is used so we know NULL checks are not needed,                          \n");
+  printf(" * and that this struct will never exist without its parent */                                 \n");
+  printf("struct StructRNA *nested = %p;                                                                 \n", RNA_Mesh.nested);
+  printf("/* function to give the more specific type */                                                  \n");
+  printf("StructRefineFunc refine = %p;                                                                  \n", RNA_Mesh.refine);
+  printf("/* function to find path to this struct in an ID */                                            \n");
+  printf("StructPathFunc path = %p;                                                                      \n", RNA_Mesh.path);
+  printf("/* function to register/unregister subclasses */                                               \n");
+  printf("StructRegisterFunc reg = %p;                                                                   \n", RNA_Mesh.reg);
+  printf("StructUnregisterFunc unreg = %p;                                                               \n", RNA_Mesh.unreg);
+  printf("/**                                                                                            \n");
+  printf(" * Optionally support reusing Python instances for this type.                                  \n");
+  printf(" *                                                                                             \n");
+  printf(" * Without this, an operator class created for #wmOperatorType.invoke (for example)            \n");
+  printf(" * would have a different instance passed to the #wmOperatorType.modal callback.               \n");
+  printf(" * So any variables assigned to `self` from Python would not be available to other callbacks.  \n");
+  printf(" *                                                                                             \n");
+  printf(" * Being able to access the instance also has the advantage that we can invalidate             \n");
+  printf(" * the Python instance when the data has been removed, see: #BPY_DECREF_RNA_INVALIDATE         \n");
+  printf(" * so accessing the variables from Python raises an exception instead of crashing.             \n");
+  printf(" */                                                                                            \n");
+  printf("StructInstanceFunc instance = %p;                                                              \n", RNA_Mesh.instance);
+  printf("/* callback to get id properties */                                                            \n");
+  printf("IDPropertiesFunc idproperties = %p;                                                            \n", RNA_Mesh.idproperties);
+  printf("/* functions of this struct */                                                                 \n");
+  printf("ListBase functions = { void *first = %p; void *last = %p; };                                   \n", RNA_Mesh.functions.first, RNA_Mesh.functions.last);
+}
+
 void quickjs_funcs_mesh() {
   quickjs_add_function("mesh_add"           , quickjsfunc_mesh_add                , 0);
   quickjs_add_function("mesh_from_buffers"  , quickjsfunc_mesh_from_buffers       , 3);
@@ -715,4 +837,7 @@ void quickjs_funcs_mesh() {
   quickjs_add_function("mesh_totselect"     , quickjsfunc_mesh_totselect          , 1);
   quickjs_add_function("mesh_totpoly"       , quickjsfunc_mesh_totpoly            , 1);
   quickjs_add_function("mesh_totloop"       , quickjsfunc_mesh_totloop            , 1);
+  
+  quickjs_add_function("mesh_rna_vertex_color_new" , quickjsfunc_mesh_rna_vertex_color_new, 2);
+  quickjs_add_function("mesh_rna_print"            , quickjsfunc_mesh_rna_print           , 0);
 }
