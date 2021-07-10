@@ -1,4 +1,5 @@
 function main() {
+    require('Collection.js');
     require('Console.js');
     require('ganja.js');
     require('MeshVertex.js');

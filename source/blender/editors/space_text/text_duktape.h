@@ -138,8 +138,12 @@ int jsfunc_JS_Eval(duk_context *ctx);
 void quickjs_eval(char *buf);
 void quickjs_set_bContext(bContext *C);
 
-
+//void quickjs_funcs_curve();
+//void quickjs_funcs_ghash();
 void quickjs_funcs_mesh();
 void quickjs_funcs_object();
+//void quickjs_funcs_rna();
+//void quickjs_funcs_scene();
+//void quickjs_funcs_utils();
 
 #endif

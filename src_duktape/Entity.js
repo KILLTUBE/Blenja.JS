@@ -20,6 +20,16 @@ class Entity {
     thingsHaveChanged();
   }
 
+  /**
+   * @param {number} pointer 
+   * @returns {Entity}
+   */
+  static fromPointer(pointer) {
+    var entity = Object.create(Entity.prototype);
+    entity.pointer = pointer;
+    return entity;
+  }
+
   destroy() {
     if (this.pointer == 0) {
       return false;

@@ -2,6 +2,7 @@
 
 #include <quickjs.h>
 
+#include "quickjs_collection.h"
 #include "quickjs_object.h"
 #include "quickjs_mesh.h"
 #include "quickjs_utils.h"
@@ -158,11 +159,17 @@ void text_duktape_init() {
   quickjs_add_function("exedir"                 , quickjsfunc_exedir                  , 0);
   quickjs_add_function("reload"                 , quickjsfunc_reload                  , 0);
   quickjs_add_function("object_destroy"         , quickjsfunc_object_destroy          , 1);
-  quickjs_add_function("new_object_with_mesh"   , quickjsfunc_new_object_with_mesh    , 0);  
+  quickjs_add_function("new_object_with_mesh"   , quickjsfunc_new_object_with_mesh    , 0);
   quickjs_add_function("thingsHaveChanged"      , quickjsfunc_thingsHaveChanged       , 0);
 
+  quickjs_funcs_collection();
+  //quickjs_funcs_curve();
+  //quickjs_funcs_ghash();
   quickjs_funcs_mesh();
   quickjs_funcs_object();
+  //quickjs_funcs_rna();
+  //quickjs_funcs_scene();
+  //quickjs_funcs_utils();
 
   JS_FreeValue(quickjs_ctx, global_obj);
 

@@ -56,10 +56,20 @@ set(SRC
   text_duktape.h
   
   # QuickJS
+  quickjs_collection.c
+  quickjs_collection.h
+  quickjs_curve.c
+  quickjs_curve.h
+  quickjs_ghash.c
+  quickjs_ghash.h
   quickjs_mesh.c
   quickjs_mesh.h
   quickjs_object.c
   quickjs_object.h
+  quickjs_rna.c
+  quickjs_rna.h
+  quickjs_scene.c
+  quickjs_scene.h
   quickjs_utils.c
   quickjs_utils.h
 )
