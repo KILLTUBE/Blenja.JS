@@ -13,7 +13,8 @@ extern JSContext *quickjs_ctx;
 extern bContext *globalC;
 
 void quickjs_funcs_collection();
-JSValue quickjsfunc_collection_first(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
-JSValue quickjsfunc_collection_get_name(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_collection_selected    (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_collection_main        (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_collection_get_name    (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
 JSValue quickjsfunc_collection_get_children(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
-JSValue quickjsfunc_collection_get_objects(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);
+JSValue quickjsfunc_collection_get_objects (JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv);

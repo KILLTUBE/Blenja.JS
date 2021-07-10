@@ -1,14 +1,17 @@
 #include "quickjs_collection.h"
 
 void quickjs_funcs_collection() {
-  quickjs_add_function("collection_first"            , quickjsfunc_collection_first        , 0);
+  quickjs_add_function("collection_selected"         , quickjsfunc_collection_selected     , 0);
+  quickjs_add_function("collection_main"             , quickjsfunc_collection_main         , 0);
   quickjs_add_function("collection_get_name"         , quickjsfunc_collection_get_name     , 1);
   quickjs_add_function("collection_get_children"     , quickjsfunc_collection_get_children , 1);
   quickjs_add_function("collection_get_objects"      , quickjsfunc_collection_get_objects  , 1);
 }
 
 // JS name: _collection_first (needs wrapper)
-JSValue quickjsfunc_collection_first(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+
+// This is basically the "selected collection"
+JSValue quickjsfunc_collection_selected(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
   bContext *C           = NULL;
   //struct Object *object = NULL;
   //int i                 = 0;
@@ -29,6 +32,31 @@ JSValue quickjsfunc_collection_first(JSContext *ctx, JSValueConst this_val, int 
   //CTX_DATA_END;
   //return js_array;
 }
+
+JSValue quickjsfunc_collection_main(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  bContext *C           = NULL;
+  //struct Object *object = NULL;
+  //int i                 = 0;
+  //JSValue js_array      = 0;
+  JSValue js_pointer    = 0;
+  Scene *scene          = NULL;
+  // #########################
+  C = globalC;
+  scene = CTX_data_scene(C);
+  struct Collection *collection = scene->master_collection;
+  js_pointer = JS_MKPTR(JS_TAG_INT, collection);
+  return js_pointer;
+  //js_array = JS_NewArray(quickjs_ctx);
+  //CTX_DATA_BEGIN (C, Object *, object, selected_objects) {
+  //  //printf("selectedObjects()[%d]: %s\n", i, object->id.name + 2);
+  //  //i++;
+  //  js_pointer = JS_MKPTR(JS_TAG_INT, object);
+  //  js_array_push(quickjs_ctx, js_array, 1, &js_pointer, false);
+  //}
+  //CTX_DATA_END;
+  //return js_array;
+}
+
 
 
 JSValue quickjsfunc_collection_get_name(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {

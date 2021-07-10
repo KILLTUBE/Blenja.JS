@@ -20,11 +20,20 @@ class Collection {
     return collection;
   }
 
+  static get selected() {
+    var pointer;
+    var collection;
+    // #########################
+    pointer = collection_selected(); // seems to be always the selected one... want the root collection tho
+    collection = Collection.fromPointer(pointer);
+    return collection;
+  }
+
   static get main() {
     var pointer;
     var collection;
     // #########################
-    pointer = collection_first(); // seems to be always the selected one... want the root collection tho
+    pointer = collection_main(); // seems to be always the selected one... want the root collection tho
     collection = Collection.fromPointer(pointer);
     return collection;
   }
@@ -36,7 +45,7 @@ class Collection {
     return pointers.map(Collection.fromPointer);
   }
 
-  get object() {
+  get objects() {
     var pointers;
     // #########################
     pointers = collection_get_objects(this.pointer);
