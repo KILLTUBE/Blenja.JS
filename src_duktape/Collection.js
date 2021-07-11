@@ -45,6 +45,21 @@ class Collection {
     return pointers.map(Collection.fromPointer);
   }
 
+  /**
+   * @example ```js
+   * console.log(Collection.main.all_children);
+   * ```
+   * @returns {Array<Collection>}
+   */
+  get all_children() {
+    var all = [];
+    this.children.forEach(collection => {
+      all.push(collection);
+      all.push(...collection.all_children);
+    });
+    return all;
+  }
+
   get objects() {
     var pointers;
     // #########################
@@ -56,5 +71,14 @@ class Collection {
     var tmp = collection_get_name(this.pointer); // E.g. 'GRMaster collection'
     tmp = tmp.substr(2); // 'Master collection'
     return tmp;
+  }
+
+  toString() {
+    var name;
+    if (this.pointer == 0) {
+      return 'Collection(destroyed)';
+    }
+    name = JSON.stringify(this.name);
+    return `Collection(name: ${name}, children.length: ${this.children.length}, objects.length: ${this.objects.length})`;
   }
 }

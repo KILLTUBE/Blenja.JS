@@ -99,9 +99,11 @@ class Entity {
   }
 
   toString() {
+    var name;
     if (this.pointer == 0) {
       return 'Entity(destroyed)';
     }
-    return `Entity(name: ${this.name}, children.length: ${this.children.length})`;
+    name = JSON.stringify(this.name);
+    return `Entity(name: ${name}, children.length: ${this.children.length})`;
   }
 }
