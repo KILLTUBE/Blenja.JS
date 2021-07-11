@@ -60,11 +60,27 @@ class Collection {
     return all;
   }
 
-  get objects() {
+  get entities() {
     var pointers;
     // #########################
     pointers = collection_get_objects(this.pointer);
     return pointers.map(Entity.fromPointer);
+  }
+
+  /**
+   * @example ```js
+   * console.log(Collection.main.all_entities);
+   * ```
+   * @returns {Array<Entity>}
+   */
+  get all_entities() {
+    // Add entities of this collection first:
+    var all_entities = this.entities;
+    // Then add entities of every child collection:
+    this.all_children.forEach(collection => {
+      all_entities.push(...collection.entities);
+    });
+    return all_entities;
   }
 
   get name() {
