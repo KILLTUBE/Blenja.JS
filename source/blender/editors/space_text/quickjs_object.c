@@ -211,6 +211,31 @@ void quickjs_delete_object(Object *object) {
   JS_FreeValue(quickjs_ctx, js_entity);
 }
 
+/*
+entities = _allEntities().map(Entity.fromPointer);
+console.log(entities);
+*/
+JSValue quickjsfunc_allEntities(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  bContext *C             = NULL;
+  Main *bmain             = NULL;
+  Scene *scene            = NULL;
+  struct Object *ob_child = NULL;
+  JSValue js_ret          = 0;
+  JSValue js_child        = 0;
+  int i                   = 0;
+  // #########################
+  C = globalC;
+  bmain = CTX_data_main(C);
+  scene = CTX_data_scene(C);
+  js_ret = JS_NewArray(ctx);
+  // Code from blender\editors\object\object_transform.c line 542
+  for (ob_child = bmain->objects.first; ob_child; ob_child = ob_child->id.next) {
+    js_child = JS_MKPTR(JS_TAG_INT, ob_child);
+    js_array_push(ctx, js_ret, 1, &js_child, false);
+  }
+  return js_ret;
+}
+
 void quickjs_funcs_object() {
   quickjs_add_function("object_position"        , quickjsfunc_object_position         , 1);
   quickjs_add_function("object_update"          , quickjsfunc_object_update           , 1);
@@ -219,4 +244,5 @@ void quickjs_funcs_object() {
   quickjs_add_function("object_mesh_get"        , quickjsfunc_object_mesh_get         , 1);
   quickjs_add_function("object_reference_set"   , quickjsfunc_object_reference_set    , 2);
   quickjs_add_function("_selectedObjects"       , quickjsfunc_selectedObjects         , 0);
+  quickjs_add_function("_allEntities"           , quickjsfunc_allEntities             , 0);
 }

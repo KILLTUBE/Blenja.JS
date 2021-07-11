@@ -14,10 +14,14 @@ class Entity {
 
   constructor(name = "Untitled") {
     this.pointer = new_object_with_mesh(name);
+    this.init();
+    thingsHaveChanged();
+  }
+
+  init() {
     this.position = new Float32Array(object_position(this.pointer));
     // Set reference in `struct Object *` itself
     object_reference_set(this.pointer, this);
-    thingsHaveChanged();
   }
 
   /**
@@ -27,7 +31,15 @@ class Entity {
   static fromPointer(pointer) {
     var entity = Object.create(Entity.prototype);
     entity.pointer = pointer;
+    entity.init();
     return entity;
+  }
+
+  /**
+   * @returns {Entity[]}
+   */
+  static get all() {
+    return _allEntities().map(Entity.fromPointer);
   }
 
   destroy() {
@@ -45,6 +57,8 @@ class Entity {
     this.pointer = 0;
   }
 
+  // This is called for e.g. setting x/y/z, if this becomes a performance concern,
+  // simply mark the entity as dirty and call these methods only once at end.
   update() {
     if (this.pointer == 0) {
       return false;
@@ -55,20 +69,13 @@ class Entity {
   }
 
   get children() {
-    var pointer;
     var pointers;
-    var i;
     // #########################
     if (this.pointer == 0) {
       return undefined;
     }
     pointers = object_children(this.pointer);
-    for (i=0; i<pointers.length; i++) {
-      pointer = pointers[i];
-      pointers[i] = Object.create(Entity.prototype);
-      pointers[i].pointer = pointer;
-    }
-    return pointers;
+    return pointers.map(Entity.fromPointer);
   }
 
   get name() {
@@ -105,5 +112,24 @@ class Entity {
     }
     name = JSON.stringify(this.name);
     return `Entity(name: ${name}, children.length: ${this.children.length})`;
+  }
+
+  get x() { return this.position[0]; }
+  get y() { return this.position[1]; }
+  get z() { return this.position[2]; }
+  set x(value) {
+    var val = this.position[0] = value;
+    this.update();
+    return val;
+  }
+  set y(value) {
+    val = this.position[1] = value;
+    this.update();
+    return val;
+  }
+  set z(value) {
+    var val = this.position[2] = value;
+    this.update();
+    return val;
   }
 }
