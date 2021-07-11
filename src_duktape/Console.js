@@ -31,6 +31,13 @@ Console.prototype.log = function() {
   })
 }
 
+Console.prototype.warn = function() {
+  var i = lines.length;
+  log('WARN: ');
+  Console.prototype.log.apply(console, arguments);
+  lines[i] = 'WARN: ' + lines[i];
+}
+
 Console.prototype.clear = function() {
   lines.length = 0;
 }

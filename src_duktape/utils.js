@@ -35,3 +35,48 @@ function joinBeforeAfter(arr, before, after) {
   }
   return ret;
 }
+
+/**
+ * @param {any[]} arr
+ * @returns 
+ */
+
+function isArray(arr) {
+  if (arr instanceof Array) {
+    return true;
+  }
+  if (arr instanceof Float32Array) {
+    return true;
+  }
+  // Not using any other array's currently and there should be a better way.
+  //if (arr instanceof Float64Array) {
+  //  return true;
+  //}
+  // Check Int32Array etc.
+}
+
+/**
+ * @example ```js
+ * // Prints: [5,10,12]
+ * console.log(min([10,11,12], [5,10,15]))
+ * ```
+ * @todo
+ * Support varargs, so code like `min(...Entity.all.map(e=>e.position))` will work
+ * @param {Array} a 
+ * @param {Array} b 
+ * @returns {Array}
+ */
+function min(a, b) {
+  if (isArray(a) && isArray(b)) {
+    var n = Math.max(a.length, b.length);
+    var ret = Array(n);
+    for (var i=0; i<n; i++) {
+      // If one array is shorter than the other, this will compare undefined and return NaN...
+      // IMO programmers fault to find minimum values in such cases
+      ret[i] = Math.min(a[i], b[i]);
+    }
+    return ret;
+  } else {
+    console.warn(`Unimplemented: min(${typeof a}, ${typeof b})`);
+  }
+}
