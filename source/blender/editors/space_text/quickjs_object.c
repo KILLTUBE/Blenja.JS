@@ -172,6 +172,96 @@ JSValue quickjsfunc_object_reference_set(JSContext *ctx, JSValueConst this_val, 
   return JS_TRUE;
 }
 
+//
+
+JSValue quickjsfunc_entity_jump_to(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  bContext *C           = NULL;
+  struct Object *object = NULL;
+  bool ret              = false;
+  // #########################
+  C = globalC;
+  if (argc != 1) {
+    js_printf(__FUNCTION__ "> expecting two arguments (entity pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  object = JS_VALUE_GET_PTR(argv[0]);
+  ret = ED_object_jump_to_object(C, object, true);
+  return JS_MKVAL(JS_TAG_BOOL, ret);
+}
+
+JSValue quickjsfunc_entity_select(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  Object *object        = NULL;
+  Object *baseobject    = NULL;
+  bContext *C           = NULL;
+  ViewLayer *view_layer = NULL;
+  // #########################
+  C = globalC;
+  if (argc != 1) {
+    js_printf(__FUNCTION__ "> expecting two arguments (entity pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  view_layer = CTX_data_view_layer(C);
+  object = JS_VALUE_GET_PTR(argv[0]);
+  LISTBASE_FOREACH (Base *, base, &view_layer->object_bases) {
+    baseobject = base->object;
+    //ob->flag &= ~OB_DONE;
+    //ob->id.tag &= ~LIB_TAG_DOIT;
+    ///* parent may be in another scene */
+    //if (ob->parent) {
+    //  ob->parent->flag &= ~OB_DONE;
+    //  ob->parent->id.tag &= ~LIB_TAG_DOIT;
+    //}
+    if (baseobject == object) {
+      //void ED_object_base_select(Base *base, eObjectSelect_Mode mode)
+      ED_object_base_select(base, BA_SELECT);
+    }
+  }
+  return JS_TRUE;
+}
+
+
+JSValue quickjsfunc_entity_deselect(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  Object *object        = NULL;
+  Object *baseobject    = NULL;
+  bContext *C           = NULL;
+  ViewLayer *view_layer = NULL;
+  // #########################
+  C = globalC;
+  if (argc != 1) {
+    js_printf(__FUNCTION__ "> expecting two arguments (entity pointer)\n");
+    return JS_FALSE;
+  }
+  if (JS_VALUE_GET_TAG(argv[0]) != JS_TAG_INT) {
+    js_printf(__FUNCTION__ "> arguments[0] needs to be a pointer (JS_TAG_INT for lack of pointer tag)\n");
+    return JS_FALSE;
+  }
+  view_layer = CTX_data_view_layer(C);
+  object = JS_VALUE_GET_PTR(argv[0]);
+  LISTBASE_FOREACH (Base *, base, &view_layer->object_bases) {
+    baseobject = base->object;
+    //ob->flag &= ~OB_DONE;
+    //ob->id.tag &= ~LIB_TAG_DOIT;
+    ///* parent may be in another scene */
+    //if (ob->parent) {
+    //  ob->parent->flag &= ~OB_DONE;
+    //  ob->parent->id.tag &= ~LIB_TAG_DOIT;
+    //}
+    if (baseobject == object) {
+      //void ED_object_base_select(Base *base, eObjectSelect_Mode mode)
+      ED_object_base_select(base, BA_DESELECT);
+    }
+  }
+  return JS_TRUE;
+}
+
 // JS name: _selectedObjects (needs wrapper)
 JSValue quickjsfunc_selectedObjects(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
   bContext *C           = NULL;
@@ -243,6 +333,9 @@ void quickjs_funcs_object() {
   quickjs_add_function("object_name_get"        , quickjsfunc_object_name_get         , 1);
   quickjs_add_function("object_mesh_get"        , quickjsfunc_object_mesh_get         , 1);
   quickjs_add_function("object_reference_set"   , quickjsfunc_object_reference_set    , 2);
+  quickjs_add_function("_entity_jump_to"        , quickjsfunc_entity_jump_to          , 1);
+  quickjs_add_function("_entity_select"         , quickjsfunc_entity_select           , 1);
+  quickjs_add_function("_entity_deselect"       , quickjsfunc_entity_deselect         , 1);
   quickjs_add_function("_selectedObjects"       , quickjsfunc_selectedObjects         , 0);
   quickjs_add_function("_allEntities"           , quickjsfunc_allEntities             , 0);
 }

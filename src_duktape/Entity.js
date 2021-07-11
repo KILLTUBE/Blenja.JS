@@ -114,6 +114,32 @@ class Entity {
     return `Entity(name: ${name}, children.length: ${this.children.length})`;
   }
 
+  /**
+   * @example ```js
+   * Entity.all.forEach(e=>e.select())
+   * ```
+   */
+  select() {
+    _entity_select(this.pointer);
+  }
+
+  /**
+   * @example ```js
+   * Entity.all.forEach(e=>e.deselect())
+   * ```
+   */
+  deselect() {
+    _entity_deselect(this.pointer);
+  }
+
+  /**
+   * Looks like this just selects the object so far... would be nice to have focus()
+   * @returns {boolean}
+   */
+  jumpTo() {
+    return _entity_jump_to(this.pointer);
+  }
+
   get x() { return this.position[0]; }
   get y() { return this.position[1]; }
   get z() { return this.position[2]; }
