@@ -56,6 +56,8 @@ set(SRC
   text_duktape.h
   
   # QuickJS
+  quickjs_Base.c
+  quickjs_Base.h
   quickjs_collection.c
   quickjs_collection.h
   quickjs_curve.c
@@ -72,6 +74,10 @@ set(SRC
   quickjs_scene.h
   quickjs_utils.c
   quickjs_utils.h
+  quickjs_View3D.c
+  quickjs_View3D.h
+  quickjs_ViewLayer.c
+  quickjs_ViewLayer.h
 )
 
 set(LIB
