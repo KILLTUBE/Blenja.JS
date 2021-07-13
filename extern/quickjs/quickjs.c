@@ -46,6 +46,9 @@
 #include "list.h"
 #include "quickjs.h"
 #include "libregexp.h"
+#ifdef CONFIG_BIGNUM
+#include "libbf.h"
+#endif
 
 #define OPTIMIZE         1
 #define SHORT_OPCODES    1
@@ -301,6 +304,13 @@ struct JSRuntime {
     int shape_hash_size;
     int shape_hash_count; /* number of hashed shapes */
     JSShape **shape_hash;
+#ifdef CONFIG_BIGNUM
+    bf_context_t bf_ctx;
+    JSNumericOperations bigint_ops;
+    JSNumericOperations bigfloat_ops;
+    JSNumericOperations bigdecimal_ops;
+    uint32_t operator_count;
+#endif
     void *user_opaque;
 };
 
@@ -49364,7 +49374,6 @@ static const JSCFunctionListEntry js_operators_funcs[] = {
 void JS_AddIntrinsicOperators(JSContext *ctx)
 {
     JSValue obj;
-
     ctx->allow_operator_overloading = TRUE;
     obj = JS_NewCFunction(ctx, js_global_operators, "Operators", 1);
     JS_SetPropertyFunctionList(ctx, obj,

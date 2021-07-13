@@ -135,6 +135,14 @@ void text_duktape_init() {
   // Init QuickJS aswell
   quickjs_runtime = JS_NewRuntime();
   quickjs_ctx = JS_NewContext(quickjs_runtime);
+//#ifdef CONFIG_BIGNUM
+    //if (bignum_ext) {
+        JS_AddIntrinsicBigFloat(quickjs_ctx);
+        JS_AddIntrinsicBigDecimal(quickjs_ctx);
+        JS_AddIntrinsicOperators(quickjs_ctx);
+        JS_EnableBignumExt(quickjs_ctx, true);
+    //}
+//#endif
   //JSClassID test_id;
   //JSClassDef test_class;
   //JS_NewClassID(&test_id);

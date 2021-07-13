@@ -23,6 +23,8 @@ set(INC
 set(SRC
   cutils.c
   cutils.h
+  libbf.c
+  libbf.h
   libregexp.c
   libregexp.h
   libregexp-opcode.h
@@ -48,5 +50,6 @@ set(LIB
 add_compile_definitions(JS_STRICT_NAN_BOXING)
 add_compile_definitions(CONFIG_JSX)
 #add_compile_definitions(CONFIG_STORAGE)
+add_compile_definitions(CONFIG_BIGNUM)
 
 blender_add_lib(extern_quickjs "${SRC}" "${INC}" "" "${LIB}")

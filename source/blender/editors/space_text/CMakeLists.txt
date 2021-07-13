@@ -87,7 +87,6 @@ set(LIB
   extern_quickjs
 )
 
-
 if(WITH_PYTHON)
   list(APPEND INC
     ../../python
