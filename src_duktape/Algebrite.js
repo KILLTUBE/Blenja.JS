@@ -30745,6 +30745,9 @@ if (typeof define === "function" && define.amd) {
     });
 }
 
-},{}],3:[function(require,module,exports){
-window.Algebrite = require('../dist/algebrite')
+},{}],3:[function(require,module,exports) {
+  window.Algebrite = require('../dist/algebrite');
+  if (typeof globalThis === 'object') {
+    globalThis.Algebrite = window.Algebrite;
+  }
 },{"../dist/algebrite":1}]},{},[3]);
