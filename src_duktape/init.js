@@ -29,6 +29,6 @@ try {
   main();
 } catch (e) {
   // Print error to console, when QuickJS initialisation scripts fail
-  log('Exception:');
-  log(e);
+  println('Exception:');
+  println(e);
 }

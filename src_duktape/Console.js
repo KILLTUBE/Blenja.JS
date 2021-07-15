@@ -26,14 +26,14 @@ Console.prototype.log = function() {
     out += ' ';
   }
   out.split('\n').forEach(line => {
-    log(line); // to console
+    println(line); // to console
     lines.push(line); // to Blender editor
   })
 }
 
 Console.prototype.warn = function() {
   var i = lines.length;
-  log('WARN: ');
+  println('WARN: ');
   Console.prototype.log.apply(console, arguments);
   lines[i] = 'WARN: ' + lines[i];
 }

@@ -54,7 +54,7 @@ void js_add_function(char *name, duk_c_function func, duk_idx_t nargs) {
   duk_put_global_string(ctx, name);      // [...                           ]
 }
 
-JSValue quickjs_log(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+JSValue quickjs_println(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
   const char *str = NULL;
   int i           = 0;
   size_t len      = 0;
@@ -152,11 +152,12 @@ void text_duktape_init() {
 
   global_obj = JS_GetGlobalObject(quickjs_ctx);
 
-  log = JS_NewCFunction(quickjs_ctx, quickjs_log, "log", 0);
+  //log = JS_NewCFunction(quickjs_ctx, quickjs_log, "log", 0);
   //console = JS_NewObject(quickjs_ctx);
-  //JS_SetPropertyStr(quickjs_ctx, console, "log", log);
+  //JS_SetPropertyStr(quickjs_ctx, console, "log", log); // Stop using log because it conflicts with logarithm
   //JS_SetPropertyStr(quickjs_ctx, global_obj, "console", console);
-  JS_SetPropertyStr(quickjs_ctx, global_obj, "log", log);
+  //JS_SetPropertyStr(quickjs_ctx, global_obj, "puts", log);
+  quickjs_add_function("println"                , quickjs_println                 , 0);
 
   quickjs_lines = JS_NewArray(quickjs_ctx);
   JS_SetPropertyStr(quickjs_ctx, global_obj, "lines", quickjs_lines);
@@ -536,7 +537,7 @@ void quickjs_reload() {
     "  ret = include(dir + '/' + filename);                         \n"
     "  return ret;                                                  \n"
     "}                                                              \n"
-    "log('QuickJS require dir', dir);                               \n"
+    "println('QuickJS require dir', dir);                           \n"
     "window = {};                                                   \n"
     "require('init.js');                                            \n"
   );

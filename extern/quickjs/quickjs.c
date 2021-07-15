@@ -12546,6 +12546,12 @@ static int get_ovop_from_opcode(OPCodeEnum op)
     case OP_dec:
         return JS_OVOP_DEC;
     default:
+        /*
+        Triggered by:
+          require('qjs_calc.js');
+          var fraction = Fraction(1, 2);
+          ~fraction;
+        */
         abort();
     }
 }
