@@ -1,3 +1,10 @@
+function objectToString(o) {
+  var keys = Object.keys(o);
+  return '{' + keys.map(key=>{
+    `${key}: ${o[key]}`
+  }).join(',') + '}';
+}
+
 function Console() {
   // nothing
 }
@@ -7,10 +14,16 @@ Console.prototype.log = function() {
   var arg;
   for (var i=0; i<arguments.length; i++) {
     arg = arguments[i];
+    // Handle highest elements in prototype chain first
     if (arg instanceof Array) {
       // If entire array is < 60 chars, don't add newlines.
-      // Not the most performance way, could also iterate and break when > 60 condition hits
-      var totalLength = sum(arg.map(x=>x.toString().length));
+      // Not the most performant way, could also iterate and break when > 60 condition hits
+      var totalLength = 0;
+      try {
+        totalLength = sum(arg.map(x=>x.toString().length));
+      } catch (e) {
+        //console.log('try-catch Array');
+      }
       if (totalLength > 60) {
         out += '[\n';
         out += joinBeforeAfter(arg, '  ', ',\n');
@@ -20,6 +33,10 @@ Console.prototype.log = function() {
         out += arg.join(',');
         out += ']';
       }
+    } else if (arg instanceof Function) {
+      out += arg;
+    } else if (arg instanceof Object) {
+      out += objectToString(arg);
     } else {
       out += arg;
     }
