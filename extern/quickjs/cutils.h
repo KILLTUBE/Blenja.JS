@@ -41,7 +41,8 @@
 /* set if CPU is big endian */
 #undef WORDS_BIGENDIAN
 
-#ifndef __has_attribute
+//#ifndef __has_attribute
+#ifdef _MSC_VER
   #define likely(x)    (x)
   #define unlikely(x)  (x)
   #define force_inline __forceinline
