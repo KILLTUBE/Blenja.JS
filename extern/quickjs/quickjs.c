@@ -208,6 +208,7 @@ typedef enum JSErrorEnum {
 
 #define __maybe_unused
 #define __exception
+#define __attribute
 #define no_inline
 
 //#define __exception __attribute__((warn_unused_result))
@@ -979,6 +980,7 @@ struct JSObject {
 #endif 
 
 };
+#if 0
 enum {
     __JS_ATOM_NULL = JS_ATOM_NULL,
 #define DEF(name, str) JS_ATOM_ ## name,
@@ -986,8 +988,6 @@ enum {
 #undef DEF
     JS_ATOM_END,
 };
-#define JS_ATOM_LAST_KEYWORD JS_ATOM_super
-#define JS_ATOM_LAST_STRICT_KEYWORD JS_ATOM_yield
 
 static const char js_atom_init[] =
 #define DEF(name, str) str "\0"
@@ -1024,6 +1024,13 @@ enum OPCodeEnum {
 #undef FMT
     OP_TEMP_END,
 };
+#else
+#include "quickjs-opcode-gen-out.h"
+#endif
+// Finally for both opcode cases:
+#define JS_ATOM_LAST_KEYWORD JS_ATOM_super
+#define JS_ATOM_LAST_STRICT_KEYWORD JS_ATOM_yield
+
 
 static int JS_InitAtoms(JSRuntime *rt);
 static JSAtom __JS_NewAtomInit(JSRuntime *rt, const char *str, int len,
@@ -5260,12 +5267,12 @@ static void free_property(JSRuntime *rt, JSProperty *pr, int prop_flags)
     }
 }
 
-static force_inline JSShapeProperty *find_own_property1(JSObject *p,
-                                                        JSAtom atom)
-{
+static /*force_inline*/ JSShapeProperty *find_own_property1(JSObject *p, JSAtom atom) {
     JSShape *sh;
-    JSShapeProperty *pr, *prop;
+    JSShapeProperty *pr;
+    JSShapeProperty *prop;
     intptr_t h;
+    // #########################
     sh = p->shape;
     h = (uintptr_t)atom & sh->prop_hash_mask;
     h = prop_hash_end(sh)[-h - 1];
@@ -5280,13 +5287,12 @@ static force_inline JSShapeProperty *find_own_property1(JSObject *p,
     return NULL;
 }
 
-static force_inline JSShapeProperty *find_own_property(JSProperty **ppr,
-                                                       JSObject *p,
-                                                       JSAtom atom)
-{
+static /*force_inline*/ JSShapeProperty *find_own_property(JSProperty **ppr, JSObject *p, JSAtom atom) {
     JSShape *sh;
-    JSShapeProperty *pr, *prop;
+    JSShapeProperty *pr;
+    JSShapeProperty *prop;
     intptr_t h;
+    // #########################
     sh = p->shape;
     h = (uintptr_t)atom & sh->prop_hash_mask;
     h = prop_hash_end(sh)[-h - 1];
@@ -20369,9 +20375,7 @@ static void free_token(JSParseState *s, JSToken *token)
     }
 }
 
-static void __attribute((unused)) dump_token(JSParseState *s,
-                                             const JSToken *token)
-{
+static void /*__attribute((unused))*/ dump_token(JSParseState *s, const JSToken *token) {
     switch(token->val) {
     case TOK_NUMBER:
         {
