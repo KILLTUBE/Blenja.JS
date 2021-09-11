@@ -1071,7 +1071,7 @@ static __maybe_unused void JS_DumpValue(JSContext *ctx, JSValueConst val);
 static __maybe_unused void JS_PrintValue(JSContext *ctx,
                                                   const char *str,
                                                   JSValueConst val);
-static __maybe_unused void JS_DumpShapes(JSRuntime *rt);
+__maybe_unused void JS_DumpShapes(JSRuntime *rt);
 static JSValue js_function_apply(JSContext *ctx, JSValueConst this_val,
                                  int argc, JSValueConst *argv, int magic);
 static void js_array_finalizer(JSRuntime *rt, JSValue val);
@@ -4763,8 +4763,7 @@ static __maybe_unused void JS_DumpShape(JSRuntime *rt, int i, JSShape *sh)
     printf("\n");
 }
 
-static __maybe_unused void JS_DumpShapes(JSRuntime *rt)
-{
+__maybe_unused void JS_DumpShapes(JSRuntime *rt) {
     int i;
     JSShape *sh;
     struct list_head *el;
