@@ -1,6 +1,6 @@
 /**
  * @example
- * ```
+ * ```js
  *   reload();
  *   console.clear();
  *   a = new Entity('a');
@@ -8,8 +8,17 @@
  * ```
  */
 
-class MeshPoly {
-  constructor(mesh, i) {
+import {
+  mesh_get_polyid_flag, mesh_get_polyid_loopstart, mesh_get_polyid_mat_nr, mesh_get_polyid_totloop,
+  mesh_set_polyid_flag, mesh_set_polyid_loopstart, mesh_set_polyid_mat_nr, mesh_set_polyid_totloop
+} from "./blenja";
+import { Mesh } from "./Mesh";
+
+export class MeshPoly {
+  mesh: Mesh;
+  i: number;
+
+  constructor(mesh: Mesh, i: number) {
     this.mesh = mesh;
     this.i = i;
   }
@@ -18,13 +27,14 @@ class MeshPoly {
   get totloop  (     ) { return mesh_get_polyid_totloop  (this.mesh.pointer, this.i       ); }
   get mat_nr   (     ) { return mesh_get_polyid_mat_nr   (this.mesh.pointer, this.i       ); }
   get flag     (     ) { return mesh_get_polyid_flag     (this.mesh.pointer, this.i       ); }
-  set loopstart(value) { return mesh_set_polyid_loopstart(this.mesh.pointer, this.i, value); }
-  set totloop  (value) { return mesh_set_polyid_totloop  (this.mesh.pointer, this.i, value); }
-  set mat_nr   (value) { return mesh_set_polyid_mat_nr   (this.mesh.pointer, this.i, value); }
-  set flag     (value) { return mesh_set_polyid_flag     (this.mesh.pointer, this.i, value); }
+  set loopstart(value) {        mesh_set_polyid_loopstart(this.mesh.pointer, this.i, value); }
+  set totloop  (value) {        mesh_set_polyid_totloop  (this.mesh.pointer, this.i, value); }
+  set mat_nr   (value) {        mesh_set_polyid_mat_nr   (this.mesh.pointer, this.i, value); }
+  set flag     (value) {        mesh_set_polyid_flag     (this.mesh.pointer, this.i, value); }
 
   toString() {
-    var tmp;
+    var tmp: string;
+    // #########################
     tmp = 'MeshPoly { ';
     tmp += `meshPointer: ${this.mesh.pointer}, `;
     tmp += `i: ${this.i}, `;

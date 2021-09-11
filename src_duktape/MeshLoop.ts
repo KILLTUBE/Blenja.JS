@@ -8,8 +8,13 @@
  * ```
  */
 
-class MeshLoop {
-  constructor(mesh, i) {
+import { Mesh } from "./Mesh";
+
+export class MeshLoop {
+  mesh: Mesh;
+  i: number;
+
+  constructor(mesh: Mesh, i: number) {
     this.mesh = mesh;
     this.i = i;
   }
@@ -20,7 +25,8 @@ class MeshLoop {
   set v(value) { return mesh_set_loopid_ev(this.mesh.pointer, this.i, 1, value); }
 
   toString() {
-    var tmp;
+    var tmp: string;
+    // #########################
     tmp = 'MeshLoop { ';
     tmp += `meshPointer: ${this.mesh.pointer}, `;
     tmp += `i: ${this.i}, `;

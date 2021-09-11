@@ -1,10 +1,21 @@
+window = this; // TODO: window = getGlobal();
+
 function requireTS(filename) {
   var final = dir + '/' + filename;
   var contents = file_get_contents(final);
-  var out = TypeSpirit.rewrite(contents, {
-    keepImport: false,
-  }).out;
-  eval.bind(window)(out);
+  var ret = TypeSpirit.rewrite(contents,{keepImport:false});
+  var out = ret.out;
+  //console.log(Object.keys(ret.names))
+  console.log(Object.keys(ret.names)) // .join(',')
+  var names = Object.keys(ret.names);
+  out += '\nreturn {\n';
+  for (var name of names) {
+      out += '  ' + name + ',\n';
+  }
+  out += '};';
+  //console.log(out);
+  var f = new Function(out);
+  Object.assign(window, f());
 }
 
 function main() {
@@ -17,18 +28,20 @@ function main() {
   require('Console.js');
   // skip copyfiles.js
   // skip duktape_quickjs.js
-  require('Entity.js');
+  requireTS('Entity.ts');
   // skip example_ganja.js
   require('ganja.js');
-  require('GHash.js');
-  require('Icosahedron.js');
+  requireTS('GHash.ts');
+  requireTS('Icosahedron.ts');
+  // requireTS('jsx.ts');
   // skip init.js
-  require('Mesh.js');
-  require('MeshEdge.js');
-  require('MeshLoop.js');
-  require('MeshPoly.js');
-  require('MeshVertex.js');
-  require('Performance.js');
+  requireTS('Mesh.ts');
+  requireTS('MeshEdge.ts');
+  requireTS('MeshLoop.ts');
+  requireTS('MeshPoly.ts');
+  requireTS('MeshVertex.ts');
+  requireTS('Performance.ts');
+  // requireTS('Person.ts');
   // skip pga3d_icosahedron.js
   // skip pga3d_objects.js
   require('selectedObjects.js');

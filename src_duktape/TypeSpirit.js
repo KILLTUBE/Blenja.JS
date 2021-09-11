@@ -1435,7 +1435,7 @@ function rewrite(str, options) {
     classframe.classname = token;
     if (!inExport) {
       // Work around code like: var gen = class Gen;
-      out += 'window.' + token + ' = ';
+      //out += 'window.' + token + ' = ';
     } else {
       outExport();
     }

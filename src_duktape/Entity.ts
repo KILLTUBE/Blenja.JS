@@ -9,7 +9,8 @@
  * ```
  */
 
-class Entity {
+export class Entity {
+  position: Float32Array;
   pointer = 0;
 
   constructor(name = "Untitled") {
@@ -24,21 +25,16 @@ class Entity {
     object_reference_set(this.pointer, this);
   }
 
-  /**
-   * @param {number} pointer 
-   * @returns {Entity}
-   */
-  static fromPointer(pointer) {
-    var entity = Object.create(Entity.prototype);
+  static fromPointer(pointer: number) {
+    var entity: Entity;
+    // #########################
+    entity = Object.create(Entity.prototype);
     entity.pointer = pointer;
     entity.init();
     return entity;
   }
 
-  /**
-   * @returns {Entity[]}
-   */
-  static get all() {
+  static get all(): Entity[] {
     return _allEntities().map(Entity.fromPointer);
   }
 
@@ -79,7 +75,7 @@ class Entity {
   }
 
   get name() {
-    var tmp;
+    var tmp: string;
     // #########################
     if (this.pointer == 0) {
       return undefined;
@@ -91,8 +87,8 @@ class Entity {
   }
 
   get mesh() {
-    var mesh;
-    var meshPointer;
+    var mesh: Mesh;
+    var meshPointer: number;
     // #########################
     if (this.pointer == 0) {
       return undefined;
@@ -106,7 +102,8 @@ class Entity {
   }
 
   toString() {
-    var name;
+    var name: string;
+    // #########################
     if (this.pointer == 0) {
       return 'Entity(destroyed)';
     }
@@ -144,18 +141,15 @@ class Entity {
   get y() { return this.position[1]; }
   get z() { return this.position[2]; }
   set x(value) {
-    var val = this.position[0] = value;
+    this.position[0] = value;
     this.update();
-    return val;
   }
   set y(value) {
-    val = this.position[1] = value;
+    this.position[1] = value;
     this.update();
-    return val;
   }
   set z(value) {
-    var val = this.position[2] = value;
+    this.position[2] = value;
     this.update();
-    return val;
   }
 }

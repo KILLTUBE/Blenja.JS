@@ -22,7 +22,7 @@
  * 
  */
 
-class Mesh {
+export class Mesh {
   pointer  = 0;
   vertices = [];
   loops    = [];
@@ -37,8 +37,8 @@ class Mesh {
     this.initPolygons();
   }
 
-  static fromPointer(meshPointer) {
-    var mesh;
+  static fromPointer(meshPointer: number) {
+    var mesh: Mesh;
     // #########################
     mesh = Object.create(Mesh.prototype);
     mesh.pointer  = meshPointer;
@@ -54,7 +54,7 @@ class Mesh {
   }
 
   static fromBuffers(vertices, loops, polygons) {
-    var meshPointer;
+    var meshPointer: number;
     meshPointer = mesh_from_buffers(vertices, loops, polygons);
     return Mesh.fromPointer(meshPointer);
   }
@@ -64,8 +64,8 @@ class Mesh {
   }
 
   initVertices() {
-    var i;
-    var n;
+    var i: number;
+    var n: number;
     // #########################
     n = this.totvert;
     this.vertices.length = n;
@@ -75,8 +75,8 @@ class Mesh {
   }
 
   initLoops() {
-    var i;
-    var n;
+    var i: number;
+    var n: number;
     // #########################
     n = this.totloop;
     this.loops.length = n;
@@ -86,8 +86,8 @@ class Mesh {
   }
 
   initEdges() {
-    var i;
-    var n;
+    var i: number;
+    var n: number;
     // #########################
     n = this.totedge;
     this.edges.length = n;
@@ -97,8 +97,8 @@ class Mesh {
   }
 
   initPolygons() {
-    var i;
-    var n;
+    var i: number;
+    var n: number;
     // #########################
     n = this.totpoly;
     this.polygons.length = n;
@@ -135,8 +135,8 @@ class Mesh {
   }
 
   describe() {
-    var i;
-    var n;
+    var i: number;
+    var n: number;
     var vertices;
     var vertex;
     var loops;
@@ -177,7 +177,8 @@ class Mesh {
   }
 
   toString() {
-    var ret;
+    var ret: string;
+    // #########################
     ret = 'Mesh { ';
     ret += `totvert: ${this.totvert}, `;
     ret += `totedge: ${this.totedge}, `;
@@ -189,7 +190,7 @@ class Mesh {
     return ret;
   }
 
-  rna_vertex_color_new(name) {
+  rna_vertex_color_new(name: string) {
     mesh_rna_vertex_color_new(this.pointer, name);
   }
 }
