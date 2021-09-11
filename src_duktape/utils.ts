@@ -1,29 +1,21 @@
 /**
  * @example ```js
- * sum([1, 2, 3]);
+ *   sum([1, 2, 3]); // == 6
  * ```
- * @param {number[]} arr 
- * @returns {number}
  */
-
-function sum(arr) {
+export function sum(arr: number[]) {
   return arr.reduce((acc, cur)=>acc+cur, 0);
 }
 
-
 /**
  * @example ```js
- * console.log(joinBeforeAfter([1,2,3], "  ", ",\n"))
+ *   console.log(joinBeforeAfter([1,2,3], "  ", ",\n"))
  * ```
- * @param {[]} arr 
- * @param {string} before 
- * @param {string} after 
- * @returns {string}
  */
-function joinBeforeAfter(arr, before, after) {
+export function joinBeforeAfter(arr: [], before: string, after: string) {
   var ret = '';
-  var i;
-  var n;
+  var i: number;
+  var n: number;
   // #########################
   n = arr.length;
   for (i=0; i<n; i++) {
@@ -36,12 +28,7 @@ function joinBeforeAfter(arr, before, after) {
   return ret;
 }
 
-/**
- * @param {any[]} arr
- * @returns 
- */
-
-function isArray(arr) {
+export function isArray(arr: any) {
   if (arr instanceof Array) {
     return true;
   }
@@ -57,19 +44,16 @@ function isArray(arr) {
 
 /**
  * @example ```js
- * // Prints: [5,10,12]
- * console.log(min([10,11,12], [5,10,15]))
+ *   // Prints: [5,10,12]
+ *   console.log(min([10,11,12], [5,10,15]))
  * ```
  * @todo
  * Support varargs, so code like `min(...Entity.all.map(e=>e.position))` will work
- * @param {Array} a 
- * @param {Array} b 
- * @returns {Array}
  */
-function min(a, b) {
+export function min(a: number[], b: number[]) {
   if (isArray(a) && isArray(b)) {
     var n = Math.max(a.length, b.length);
-    var ret = Array(n);
+    var ret: number[] = Array(n);
     for (var i=0; i<n; i++) {
       // If one array is shorter than the other, this will compare undefined and return NaN...
       // IMO programmers fault to find minimum values in such cases
@@ -89,7 +73,7 @@ function min(a, b) {
  * ```
  * @returns {Entity[]}
  */
-function selectNoFaces() {
+export function selectNoFaces() {
   var ents = Entity.all.filter(e=>e.mesh && e.mesh.totpoly == 0);
   ents.forEach(ent=>ent.select());
   thingsHaveChanged();
@@ -97,14 +81,14 @@ function selectNoFaces() {
 }
 
 // noFaces = deselectNoFaces();
-function deselectNoFaces() {
+export function deselectNoFaces() {
   var ents = Entity.all.filter(e=>e.mesh && e.mesh.totpoly == 0);
   ents.forEach(ent=>ent.deselect());
   thingsHaveChanged();
   return ents;
 }
 
-function deselectAll() {
+export function deselectAll() {
   Entity.all.forEach(e => e.deselect());
   thingsHaveChanged();
 }
@@ -116,11 +100,11 @@ function deselectAll() {
  * thingsHaveChanged();
  * ```
  */
-function select(o) {
+export function select(o) {
   o.select();
 }
 
-function selectManyFaces() {
+export function selectManyFaces() {
   var manyFaces = Entity.all.filter(function(e) {
     var mesh = e.mesh;
     if (!mesh) {
@@ -133,8 +117,7 @@ function selectManyFaces() {
   return manyFaces;
 }
 
-
-function selectManyEdges(n = 40) {
+export function selectManyEdges(n = 40) {
   var manyFaces = Entity.all.filter(function(e) {
     var mesh = e.mesh;
     if (!mesh) {

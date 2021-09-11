@@ -1,4 +1,16 @@
+function requireTS(filename) {
+  var final = dir + '/' + filename;
+  var contents = file_get_contents(final);
+  var out = TypeSpirit.rewrite(contents, {
+    keepImport: false,
+  }).out;
+  eval.bind(window)(out);
+}
+
 function main() {
+  // standalone
+  require('TypeSpirit.js');
+
   require('Blender.js');
   require('Body.js');
   require('Collection.js');
@@ -21,8 +33,8 @@ function main() {
   // skip pga3d_objects.js
   require('selectedObjects.js');
   require('StructRNA.js');
-  require('TypeSpirit.js');
-  require('utils.js');
+  
+  requireTS('utils.ts');
 }
 
 try {
