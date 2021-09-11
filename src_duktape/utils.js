@@ -80,3 +80,69 @@ function min(a, b) {
     console.warn(`Unimplemented: min(${typeof a}, ${typeof b})`);
   }
 }
+
+/**
+ * @summary Returns every entity whose mesh has no faces. This happens for e.g. imported SVG lines.
+ * Once all of them are selected, you can extrude them with "e" to give them a mesh for e.g. glTF exporting
+ * @example ```js
+ *   noFaces = selectNoFaces();
+ * ```
+ * @returns {Entity[]}
+ */
+function selectNoFaces() {
+  var ents = Entity.all.filter(e=>e.mesh && e.mesh.totpoly == 0);
+  ents.forEach(ent=>ent.select());
+  thingsHaveChanged();
+  return ents;
+}
+
+// noFaces = deselectNoFaces();
+function deselectNoFaces() {
+  var ents = Entity.all.filter(e=>e.mesh && e.mesh.totpoly == 0);
+  ents.forEach(ent=>ent.deselect());
+  thingsHaveChanged();
+  return ents;
+}
+
+function deselectAll() {
+  Entity.all.forEach(e => e.deselect());
+  thingsHaveChanged();
+}
+
+/**
+ * @summary Used for Functional programming.
+ * @example ```js
+ * Entity.all.forEach(select);
+ * thingsHaveChanged();
+ * ```
+ */
+function select(o) {
+  o.select();
+}
+
+function selectManyFaces() {
+  var manyFaces = Entity.all.filter(function(e) {
+    var mesh = e.mesh;
+    if (!mesh) {
+      return false;
+    }
+    return mesh.totpoly > 40;
+  });
+  manyFaces.forEach(select);
+  thingsHaveChanged();
+  return manyFaces;
+}
+
+
+function selectManyEdges(n = 40) {
+  var manyFaces = Entity.all.filter(function(e) {
+    var mesh = e.mesh;
+    if (!mesh) {
+      return false;
+    }
+    return mesh.totedge > n;
+  });
+  manyFaces.forEach(select);
+  thingsHaveChanged();
+  return manyFaces;
+}
