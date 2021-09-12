@@ -22,12 +22,18 @@
  * 
  */
 
+import { mesh_add, mesh_from_buffers, mesh_rna_print, mesh_rna_vertex_color_new, mesh_totedge, mesh_totface, mesh_totloop, mesh_totpoly, mesh_totselect, mesh_totvert, mesh_update, Pointer } from "./blenja";
+import { MeshEdge } from "./MeshEdge";
+import { MeshLoop } from "./MeshLoop";
+import { MeshPoly } from "./MeshPoly";
+import { MeshVertex } from "./MeshVertex";
+
 export class Mesh {
-  pointer  = 0;
-  vertices = [];
-  loops    = [];
-  edges    = [];
-  polygons = [];
+  pointer : Pointer      =  0;
+  vertices: MeshVertex[] = [];
+  loops   : MeshLoop  [] = [];
+  edges   : MeshEdge  [] = [];
+  polygons: MeshPoly  [] = [];
 
   constructor() {
     this.pointer = mesh_add();
@@ -53,8 +59,9 @@ export class Mesh {
     return mesh;
   }
 
-  static fromBuffers(vertices, loops, polygons) {
-    var meshPointer: number;
+  static fromBuffers(vertices: Float32Array, loops: Int32Array, polygons: Int32Array) {
+    var meshPointer: Pointer;
+    // #########################
     meshPointer = mesh_from_buffers(vertices, loops, polygons);
     return Mesh.fromPointer(meshPointer);
   }
@@ -107,10 +114,6 @@ export class Mesh {
     }
   }
 
-  set_vertid_xyz_val(vertid, xyz, val) {
-    mesh_set_vertid_xyz_val(this.pointer, vertid, xyz, val);
-  }
-
   update() {
     mesh_update(this.pointer);
   }
@@ -137,14 +140,14 @@ export class Mesh {
   describe() {
     var i: number;
     var n: number;
-    var vertices;
-    var vertex;
-    var loops;
-    var loop;
-    var edges;
-    var edge;
-    var polygons;
-    var polygon;
+    var vertices: MeshVertex[];
+    var vertex  : MeshVertex;
+    var loops   : MeshLoop[];
+    var loop    : MeshLoop;
+    var edges   : MeshEdge[];
+    var edge    : MeshEdge;
+    var polygons: MeshPoly[];
+    var polygon : MeshPoly;
     // #########################
     console.log(`Vertices (${this.totvert}):`);
     vertices = this.vertices;

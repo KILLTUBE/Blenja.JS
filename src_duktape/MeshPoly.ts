@@ -1,3 +1,9 @@
+import {
+  mesh_get_polyid_flag, mesh_get_polyid_loopstart, mesh_get_polyid_mat_nr, mesh_get_polyid_totloop,
+  mesh_set_polyid_flag, mesh_set_polyid_loopstart, mesh_set_polyid_mat_nr, mesh_set_polyid_totloop
+} from "./blenja";
+import { Mesh } from "./Mesh";
+
 /**
  * @example
  * ```js
@@ -8,19 +14,9 @@
  * ```
  */
 
-import {
-  mesh_get_polyid_flag, mesh_get_polyid_loopstart, mesh_get_polyid_mat_nr, mesh_get_polyid_totloop,
-  mesh_set_polyid_flag, mesh_set_polyid_loopstart, mesh_set_polyid_mat_nr, mesh_set_polyid_totloop
-} from "./blenja";
-import { Mesh } from "./Mesh";
-
 export class MeshPoly {
-  mesh: Mesh;
-  i: number;
-
-  constructor(mesh: Mesh, i: number) {
-    this.mesh = mesh;
-    this.i = i;
+  constructor(readonly mesh: Mesh, readonly i: number) {
+    // nothing yet
   }
 
   get loopstart(     ) { return mesh_get_polyid_loopstart(this.mesh.pointer, this.i       ); }

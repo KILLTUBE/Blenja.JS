@@ -1,3 +1,6 @@
+import { new_object_with_mesh, object_children, object_destroy, object_mesh_get, object_name_get, object_position, object_reference_set, object_update, Pointer, thingsHaveChanged, _allEntities, _entity_deselect, _entity_jump_to, _entity_select } from "./blenja";
+import { Mesh } from "./Mesh";
+
 /**
  * @example
  * ```
@@ -65,7 +68,7 @@ export class Entity {
   }
 
   get children() {
-    var pointers;
+    var pointers: Pointer[];
     // #########################
     if (this.pointer == 0) {
       return undefined;
@@ -88,7 +91,7 @@ export class Entity {
 
   get mesh() {
     var mesh: Mesh;
-    var meshPointer: number;
+    var meshPointer: false | Pointer;
     // #########################
     if (this.pointer == 0) {
       return undefined;

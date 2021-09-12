@@ -2,12 +2,8 @@ import { mesh_get_vertid_xyz, mesh_set_vertid_xyz } from "./blenja";
 import { Mesh } from "./Mesh";
 
 export class MeshVertex {
-  mesh: Mesh;
-  i: number;
-
-  constructor(mesh: Mesh, i: number) {
-    this.mesh = mesh;
-    this.i = i;
+  constructor(readonly mesh: Mesh, readonly i: number) {
+    // nothing yet
   }
 
   get x(     ) { return mesh_get_vertid_xyz(this.mesh.pointer, this.i, 0       ); }

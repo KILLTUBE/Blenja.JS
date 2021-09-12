@@ -1,4 +1,4 @@
-class GHash {
+export class GHash {
     pointer = 0;
     constructor() {
         console.log('GHash#constructor> not implemented');
@@ -9,5 +9,4 @@ class GHash {
         ret.pointer = pointer;
         return ret;
     }
-    
 }

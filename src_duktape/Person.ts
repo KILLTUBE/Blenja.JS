@@ -1,10 +1,10 @@
 console.clear();
 
-class Person {
+export class Person {
+  name: string;
   constructor(name) {
     this.name = name;
   }
-  
   toString() {
     return `My name is ${this.name}`;
   }
