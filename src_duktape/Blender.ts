@@ -1,11 +1,13 @@
+import { Mesh } from "./Mesh";
+
 function nice(num) {
   return Number(num.toFixed(2))
 }
 
 function faces_to_mesh(faces) {
   var face;
-  var i;
-  var n;
+  var i: number;
+  var n: number;
   var vertex_a;
   var vertex_b;
   var vertex_c;
@@ -13,6 +15,7 @@ function faces_to_mesh(faces) {
   var blender_loops    = [];
   var blender_polygons = [];
   var vertices_n;
+  var mesh: Mesh;
   // #########################
   n = faces.length;
   vertices_n = 0;

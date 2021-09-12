@@ -5,8 +5,6 @@ function requireTS(filename) {
   var contents = file_get_contents(final);
   var ret = TypeSpirit.rewrite(contents,{keepImport:false});
   var out = ret.out;
-  //console.log(Object.keys(ret.names))
-  console.log(Object.keys(ret.names)) // .join(',')
   var names = Object.keys(ret.names);
   out += '\nreturn {\n';
   for (var name of names) {
@@ -22,10 +20,10 @@ function main() {
   // standalone
   require('TypeSpirit.js');
 
-  require('Blender.js');
-  require('Body.js');
-  require('Collection.js');
-  require('Console.js');
+  requireTS('Blender.ts');
+  requireTS('Body.ts');
+  requireTS('Collection.ts');
+  requireTS('Console.ts');
   // skip copyfiles.js
   // skip duktape_quickjs.js
   requireTS('Entity.ts');
@@ -44,9 +42,8 @@ function main() {
   // requireTS('Person.ts');
   // skip pga3d_icosahedron.js
   // skip pga3d_objects.js
-  require('selectedObjects.js');
-  require('StructRNA.js');
-  
+  requireTS('selectedObjects.ts');
+  requireTS('StructRNA.ts');
   requireTS('utils.ts');
 }
 
