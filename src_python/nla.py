@@ -1,5 +1,6 @@
 # exec(bpy.data.texts[0].as_string());
 
+"""
 for obj in bpy.context.scene.object:
     if obj.animation_data is not None:
         action = obj.animation_data.action
@@ -7,7 +8,7 @@ for obj in bpy.context.scene.object:
             track = obj.animation_data.nla_tracks.new()
             track.strips.new(action.name, action.frame_range[0], action)
             obj.animation_data.action = None
-			
+"""			
 
 # arr = Array([1,10,2,20,3,30])
 # arr.push(4, 40)
@@ -28,6 +29,27 @@ class Array(list):
     def push(self, *args):
         for arg in args:
             self.append(arg);
+    def findFirst(self, cb):
+        for _ in self:
+            if cb(_):
+                return _;
+
+# getObject('Bip001')
+def getObject(name):
+    for obj in getObjects():
+        if obj.name == name:
+            return obj
+
+# Example 1:
+#   >>> getObjects().filter(lambda obj: obj.animation_data)
+#   [bpy.data.objects['Bip001'], bpy.data.objects['EyeLeftParent'], bpy.data.objects['EyeRightParent'], bpy.data.objects['EyeTargetParent']]
+#    >>> getObjects().filtermap(lambda obj: obj.animation_data).map(getParent)
+#   [bpy.data.objects['Bip001'], bpy.data.objects['EyeLeftParent'], bpy.data.objects['EyeRightParent'], bpy.data.objects['EyeTargetParent']]
+# Example 2:
+#   getFcurves(getActions()[3]).map(getParent)
+# Summary: Gets the "parent" object of e.g. object.animation_data
+def getParent(_):
+    return _.id_data;
 
 #  getObjects().map(getName)                          # == ['Light', 'Camera', 'Bip001', 'Maila_EyeL', ...
 def getObjects():
@@ -37,12 +59,20 @@ def getObjects():
 def getAnimationDatas():
     return getObjects().filtermap(lambda object: object.animation_data);
 
-def getAction(_):
-    if type(_) == bpy.types.Object:
+# getAction(getObject('Bip001'))
+# getAction('Action.002')
+# interestingAttributes(getAction())                  # == ['name', 'users', 'fcurves', 'frame_range', 'pose_markers', 'groups']
+def getAction(_=None):
+    if _ is None:
+        return getActions()[0];
+    t = type(_)
+    if t == bpy.types.Object:
         if _.animation_data is not None:
             return _.animation_data.action;
-    elif type(_) == bpy.types.AnimData:
+    elif t == bpy.types.AnimData:
         return _.action;
+    elif t == str:
+        return getActions().findFirst(lambda action: action.name == _);
 
 # getMarkers().map(getName)                           # == ['F_42', 'A', 'C', 'B']
 def getMarkers():
@@ -52,10 +82,38 @@ def getMarkers():
 def getMarker(name):
     return bpy.context.scene.timeline_markers.get(name);
 
+def getStrips():
+    ret = getNlaTracks().map(lambda track: track.strips);
+    ret = flat(ret);
+    ret = Array(ret);
+    return ret;
+
+def getAction(_=None):
+    if _ is None:
+        return getActions()[0];
+    t = type(_);
+    if t == bpy.types.AnimData:
+        return _.action;
+    elif t == str:
+        return getActions().findFirst(lambda action: action.name == _);
+
+# getFcurves(BodyAction).map(lambda fcurve: len(fcurve.keyframe_points))     # = [74, 262, 105, 105, 98, 104, 2, 2, 2, 10, 29, 18, 14, ...
+def getFcurves(_=None):
+    if _ is None:
+        return None;
+    t = type(_);
+    if t == bpy.types.Action:
+        return Array(_.fcurves)
+    if t == bpy.types.NlaStrip:
+        return Array(_.fcurves);
+
 def createMarker(name, frame=None):
     if frame is None:
         frame = bpy.context.scene.frame_current;
     bpy.context.scene.timeline_markers.new(name, frame=frame)
+
+def createAction(name='Action'):
+    return bpy.data.actions.new(name)
 
 def select(_):
     _.select = True;
@@ -65,8 +123,10 @@ def deselect(_):
 
 # getActions().map(getName)                           # == ['Action.002', 'Action.005', 'Action.008']
 # getActions().map(getInfo)
+# getActions().map(lambda action: action.users)       # == [1, 1, 1, 0, 1, 1, 12, 1, 7, 12, 1, 1, 1, 1, 12]
 def getActions():
-    return getAnimationDatas().filtermap(lambda x: x.action)
+    #return getAnimationDatas().filtermap(lambda x: x.action)
+    return Array(bpy.data.actions);
 
 # flat([[1, 2], [3, 4]])                              # == [1, 2, 3, 4]
 def flat(_):
@@ -97,20 +157,57 @@ def getName(_):
 def getNames(_):
     return _.map(getName);
 
+def interestingAttributes(_):
+    t = type(_)
+    if t == bpy.types.Action:
+        return Array(['name', 'users', 'fcurves', 'frame_range', 'pose_markers', 'groups']);
+    elif t == bpy.types.TimelineMarker:
+        return Array(['name', 'frame', 'select', 'camera']);
+    elif t == bpy.types.NlaTrack:
+        return Array(['name', 'active', 'select', 'strips', 'mute']);
+    elif t == bpy.types.NlaStrip:
+        return Array([
+            'name', 'strip_time', 'active', 'select', 'scale',
+            'strips', 'mute', 'frame_start', 'frame_end', 'action_frame_start',
+            'action_frame_end', 'fcurves'
+        ]);
+    elif t == bpy.types.FCurve:
+        return Array([
+            'array_index',        'auto_smoothing'     , 'color'                , 'color_mode', 'data_path',
+            'hide',               'is_valid'           , 'keyframe_points'      , 'modifiers' , 'mute'     ,
+            'range',              'sampled_points'     , 'select'
+        ]);
+    return [];
+
 # getActions().map(getInfo);
+# getMarkers().map(getInfo);
+# getNlaTracks().map(getInfo)
+# getFcurves(BodyAction).map(getInfo)
 def getInfo(_):
     t = type(_)
     if t == bpy.types.Action:
-        print("Action {name='%s' users: %d, fcurves: #%d, frame_range=%s, pose_markers=#%d}" % (
-            _.name, _.users, len(_.fcurves), _.frame_range, len(_.pose_markers)
+        print("Action {name='%s' users=%d fcurves=#%d frame_range=%s pose_markers=#%d groups=#%d}" % (
+            _.name, _.users, len(_.fcurves), _.frame_range, len(_.pose_markers), len(_.groups)
         ));
     elif t == bpy.types.TimelineMarker:
-        print("TimelineMarker {name='%s' frame=%d, select=%s, camera=%s}" % (
+        print("TimelineMarker {name='%s' frame=%d select=%s camera=%s}" % (
             _.name, _.frame, _.select, _.camera
         ));
     elif t == bpy.types.NlaTrack:
-        print("NlaTrack {name='%s' active=%s, select=%s, strips=#%d, mute=%s}" % (
+        print("NlaTrack {name='%s' active=%s select=%s strips=#%d mute=%s}" % (
             _.name, _.active, _.select, len(_.strips), _.mute
+        ));
+    elif t == bpy.types.NlaStrip:
+        print("NlaStrip {name='%s' strip_time=%s active=%s select=%s scale=%s strips=#%d mute=%s frame_start=%s frame_end=%s action_frame_start=%s action_frame_end=%s fcurves=#%s}" % (
+            _.name            , _.strip_time  , _.active     , _.select   , _.scale             ,
+            len(_.strips)     , _.mute        , _.frame_start, _.frame_end, _.action_frame_start,
+            _.action_frame_end, len(_.fcurves)
+        ));
+    elif t == bpy.types.FCurve:
+        print("FCurve {array_index=%s auto_smoothing=%s color=%s color_mode=%s data_path=%s hide=%s is_valid=%s keyframe_points=#%s modifiers=#%s mute=%s range=%s sampled_points=#%s select=%s}" % (
+            _.array_index        , _.auto_smoothing     , _.color                , _.color_mode, _.data_path     ,
+            _.hide               , _.is_valid           , len(_.keyframe_points) , len(_.modifiers), _.mute      ,
+            _.range()            , len(_.sampled_points), _.select
         ));
     else:
         print('unknown thing', t, _);
@@ -149,3 +246,5 @@ newTrackA = o.animation_data.nla_tracks.new()
 # >>> o.animation_data.nla_tracks.new(prev=prev)
 # bpy.data.objects['EyeLeftParent']...NlaTrack
 
+# BodyAction = getAction('BodyAction');
+# BodyActionCopy = BodyAction.copy();
