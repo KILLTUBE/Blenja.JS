@@ -14,6 +14,7 @@ for obj in bpy.context.scene.object:
 # arr.push(4, 40)
 # print(arr.map(lambda x: x*2)) # [2, 20, 4, 40, 6, 60, 8, 80]
 # print(arr.filter(lambda x: x>=10)) # [10, 20, 30, 40]
+# print(Array([1,10,2,20,3,30]).join('\n'))
 class Array(list):
     def map(self, cb):
         return Array(map(cb, self));
@@ -33,12 +34,26 @@ class Array(list):
         for _ in self:
             if cb(_):
                 return _;
+    def get_length(self):
+        return len(self);
+    def join(self, separator=','):
+        ret = '';
+        i = 0;
+        till = self.length - 1;
+        for _ in self:
+            ret += str(_);
+            if i < till:
+                ret += separator;
+            i += 1;
+        return ret;
+    length = property(get_length);
+
+def firstObject():
+    return getObjects()[0];
 
 # getObject('Bip001')
 def getObject(name):
-    for obj in getObjects():
-        if obj.name == name:
-            return obj
+    return getObjects().findFirst(lambda obj: obj.name == name);
 
 # Example 1:
 #   >>> getObjects().filter(lambda obj: obj.animation_data)
@@ -61,10 +76,9 @@ def getAnimationDatas():
 
 # getAction(getObject('Bip001'))
 # getAction('Action.002')
-# interestingAttributes(getAction())                  # == ['name', 'users', 'fcurves', 'frame_range', 'pose_markers', 'groups']
-def getAction(_=None):
-    if _ is None:
-        return getActions()[0];
+# getSelectedObjects().map(getAction)
+
+def getAction(_):
     t = type(_)
     if t == bpy.types.Object:
         if _.animation_data is not None:
@@ -88,14 +102,9 @@ def getStrips():
     ret = Array(ret);
     return ret;
 
-def getAction(_=None):
-    if _ is None:
-        return getActions()[0];
-    t = type(_);
-    if t == bpy.types.AnimData:
-        return _.action;
-    elif t == str:
-        return getActions().findFirst(lambda action: action.name == _);
+# interestingAttributes(firstAction())                  # == ['name', 'users', 'fcurves', 'frame_range', 'pose_markers', 'groups']
+def firstAction():
+    return getActions()[0];
 
 # getFcurves(BodyAction).map(lambda fcurve: len(fcurve.keyframe_points))     # = [74, 262, 105, 105, 98, 104, 2, 2, 2, 10, 29, 18, 14, ...
 def getFcurves(_=None):
@@ -116,10 +125,24 @@ def createAction(name='Action'):
     return bpy.data.actions.new(name)
 
 def select(_):
+    t = type(_)
+    if t == bpy.types.Object:
+        return _.select_set(True);
     _.select = True;
 
 def deselect(_):
+    t = type(_)
+    if t == bpy.types.Object:
+        return _.select_set(False);
     _.select = False;
+
+# getObjects().filter(isSelected).map(deselect)
+def isSelected(_):
+    t = type(_)
+    if t == bpy.types.Object:
+        return _.select_get();
+    return _.select;
+
 
 # getActions().map(getName)                           # == ['Action.002', 'Action.005', 'Action.008']
 # getActions().map(getInfo)
@@ -209,10 +232,17 @@ def getInfo(_):
             _.hide               , _.is_valid           , len(_.keyframe_points) , len(_.modifiers), _.mute      ,
             _.range()            , len(_.sampled_points), _.select
         ));
+    elif t == bpy.types.Object:
+        print("Object {name='%s' location=%s rotation_axis_angle=%s rotation_euler=%s rotation_mode=%s rotation_quaternion=%s scale=%s}" % (
+            _.name, _.location, _.rotation_axis_angle, _.rotation_euler, _.rotation_mode, _.rotation_quaternion, _.scale,
+        ));
     else:
         print('unknown thing', t, _);
         return False;
     return True;
+
+def getSelectedObjects():
+  return Array(bpy.context.selected_objects);
 
 def getFirst(array):
     return array[0];
@@ -229,6 +259,10 @@ def newTrack(obj, name=None):
         track.name = name;
     return track;
 
+def identity(_):
+    return _;
+
+"""
 getAnimationDatas().filtermap(lambda x: x.action)
 
 actions = getActions();
@@ -236,6 +270,7 @@ a, b, c, d = getActions();
 
 o = getObjects().filter(lambda o: o.name == 'EyeLeftParent')[0]
 newTrackA = o.animation_data.nla_tracks.new()
+"""
 
 # >>> bpy.types.NlaStrips()
 # Traceback (most recent call last):
@@ -248,3 +283,8 @@ newTrackA = o.animation_data.nla_tracks.new()
 
 # BodyAction = getAction('BodyAction');
 # BodyActionCopy = BodyAction.copy();
+
+
+"""
+getSelectedObjects().map(getAction)
+"""
