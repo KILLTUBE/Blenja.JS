@@ -1,3 +1,10 @@
+
+import { mesh_add, mesh_from_buffers, mesh_rna_print, mesh_rna_vertex_color_new, mesh_totedge, mesh_totface, mesh_totloop, mesh_totpoly, mesh_totselect, mesh_totvert, mesh_update, Pointer } from "./blenja";
+import { MeshEdge } from "./MeshEdge";
+import { MeshLoop } from "./MeshLoop";
+import { MeshPoly } from "./MeshPoly";
+import { MeshVertex } from "./MeshVertex";
+
 /**
  * @example ```
  *   mesh = new Mesh();
@@ -20,13 +27,10 @@
  *   selectedObject().mesh.describe();
  * ```
  * 
+ * @todo mesh_get_name/mesh_set_name for mesh.name
+ * 
  */
 
-import { mesh_add, mesh_from_buffers, mesh_rna_print, mesh_rna_vertex_color_new, mesh_totedge, mesh_totface, mesh_totloop, mesh_totpoly, mesh_totselect, mesh_totvert, mesh_update, Pointer } from "./blenja";
-import { MeshEdge } from "./MeshEdge";
-import { MeshLoop } from "./MeshLoop";
-import { MeshPoly } from "./MeshPoly";
-import { MeshVertex } from "./MeshVertex";
 
 export class Mesh {
   pointer : Pointer      =  0;

@@ -12,4 +12,8 @@ export class MeshVertex {
   set x(value) {        mesh_set_vertid_xyz(this.mesh.pointer, this.i, 0, value); }
   set y(value) {        mesh_set_vertid_xyz(this.mesh.pointer, this.i, 1, value); }
   set z(value) {        mesh_set_vertid_xyz(this.mesh.pointer, this.i, 2, value); }
+
+  toString() {
+    return `vertex[${this.i}] = ${this.x.toFixed(3)} ${this.y.toFixed(3)} ${this.z.toFixed(3)}`;
+  }
 }

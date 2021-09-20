@@ -53,3 +53,5 @@ export declare function _entity_jump_to     (pointer: Pointer                   
 export declare function object_children     (pointer: Pointer                   ): Pointer[];
 export declare function object_name_get     (pointer: Pointer                   ): string;
 export declare function object_mesh_get     (pointer: Pointer                   ): false | Pointer;
+
+export declare function _selectedObjects(): Pointer[];

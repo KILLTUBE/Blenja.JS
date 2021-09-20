@@ -45,6 +45,7 @@ function main() {
   requireTS('selectedObjects.ts');
   requireTS('StructRNA.ts');
   requireTS('utils.ts');
+  requireTS('dumpVerlet.ts');
 }
 
 try {
