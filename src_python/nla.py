@@ -48,6 +48,13 @@ class Array(list):
         return ret;
     length = property(get_length);
 
+# ensureAnimationData(getSelectedObject());
+def ensureAnimationData(o):
+    if not o:
+        return None;
+    if not o.animation_data:
+        o.animation_data_create();
+
 def firstObject():
     return getObjects()[0];
 
@@ -96,6 +103,11 @@ def getMarkers():
 def getMarker(name):
     return bpy.context.scene.timeline_markers.get(name);
 
+def firstStrip():
+    _ = getStrips();
+    if _.length:
+        return _[0];
+
 def getStrips():
     ret = getNlaTracks().map(lambda track: track.strips);
     ret = flat(ret);
@@ -104,7 +116,9 @@ def getStrips():
 
 # interestingAttributes(firstAction())                  # == ['name', 'users', 'fcurves', 'frame_range', 'pose_markers', 'groups']
 def firstAction():
-    return getActions()[0];
+    _ = getActions();
+    if _.length:
+        return _[0];
 
 # getFcurves(BodyAction).map(lambda fcurve: len(fcurve.keyframe_points))     # = [74, 262, 105, 105, 98, 104, 2, 2, 2, 10, 29, 18, 14, ...
 def getFcurves(_=None):
@@ -120,6 +134,13 @@ def createMarker(name, frame=None):
     if frame is None:
         frame = bpy.context.scene.frame_current;
     bpy.context.scene.timeline_markers.new(name, frame=frame)
+
+def createNlaTrack(obj, name=None):
+    ensureAnimationData(obj);
+    track = obj.animation_data.nla_tracks.new()
+    if name != None:
+        track.name = name;
+    return track;
 
 def createAction(name='Action'):
     return bpy.data.actions.new(name)
@@ -143,7 +164,6 @@ def isSelected(_):
         return _.select_get();
     return _.select;
 
-
 # getActions().map(getName)                           # == ['Action.002', 'Action.005', 'Action.008']
 # getActions().map(getInfo)
 # getActions().map(lambda action: action.users)       # == [1, 1, 1, 0, 1, 1, 12, 1, 7, 12, 1, 1, 1, 1, 12]
@@ -161,14 +181,17 @@ def flat(_):
 # getNlaTracksArray().map(len)                        # == [1, 1, 2, 1]
 # getNlaTracksArray().map(getNames)                   # == [['NlaTrack'], ['RightEyeTrack'], ['[Action Stash]', 'LeftEyeTrack'], ['EyeTargetTrack']]
 def getNlaTracksArray():
-    return getAnimationDatas().filtermap(lambda x: Array(x.nla_tracks))
+    return getAnimationDatas().filtermap(lambda x: Array(x.nla_tracks));
 
 # getNlaTracks().map(getName)                         # == ['NlaTrack', 'RightEyeTrack', '[Action Stash]', 'LeftEyeTrack', 'EyeTargetTrack']
-def getNlaTracks(o=None):
-    if o is not None:
-        return o.animation_data.nla_tracks;
+def getNlaTracks(_=None):
+    t = type(_)
+    if t == bpy.types.Object:
+        if _.animation_data:
+            return Array(o.animation_data.nla_tracks);
     else:
         return flat(getNlaTracksArray());
+    return Array();
 
 def getName(_):
     if _ is None:
@@ -240,6 +263,11 @@ def getInfo(_):
         print('unknown thing', t, _);
         return False;
     return True;
+
+def getSelectedObject():
+  _ = getSelectedObjects();
+  if _.length:
+    return _[0];
 
 def getSelectedObjects():
   return Array(bpy.context.selected_objects);
