@@ -15,7 +15,7 @@ import { selectedObject } from "./selectedObjects";
 export function dumpVerlet(mesh: Mesh) {
   var out = '{\n';
   out += '  "kind": "verlet",\n';
-  out += '  "name": "todo",\n';
+  out += `  "name": "${mesh.name}",\n`;
   out += '  "vertices": [\n';
   out += mesh.vertices.map(vertex=>`    [${vertex.x}, ${vertex.y}, ${vertex.z}]`).join(',\n') + '\n';
   out += '  ],\n';

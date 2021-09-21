@@ -1,5 +1,8 @@
 import { Entity } from "./Entity";
 
+// blender\makesdna\DNA_object_types.h line 479
+export var SELECT = 1;
+
 export type U32 = number;
 export type I32 = number;
 export type Pointer = number;
@@ -35,6 +38,7 @@ export declare function mesh_get_edgeid_v1       (pointer: Pointer, i: I32      
 export declare function mesh_get_edgeid_v2       (pointer: Pointer, i: I32                                    ): I32;
 export declare function mesh_set_edgeid_v1       (pointer: Pointer, i: I32, value: U32                        );
 export declare function mesh_set_edgeid_v2       (pointer: Pointer, i: I32, value: U32                        );
+export declare function _mesh_get_name           (pointer: Pointer                                            ): string;
 
 // GHash
 

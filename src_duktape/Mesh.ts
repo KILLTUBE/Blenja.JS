@@ -1,5 +1,5 @@
 
-import { mesh_add, mesh_from_buffers, mesh_rna_print, mesh_rna_vertex_color_new, mesh_totedge, mesh_totface, mesh_totloop, mesh_totpoly, mesh_totselect, mesh_totvert, mesh_update, Pointer } from "./blenja";
+import { mesh_add, mesh_from_buffers, mesh_rna_print, mesh_rna_vertex_color_new, mesh_totedge, mesh_totface, mesh_totloop, mesh_totpoly, mesh_totselect, mesh_totvert, mesh_update, Pointer, _mesh_get_name } from "./blenja";
 import { MeshEdge } from "./MeshEdge";
 import { MeshLoop } from "./MeshLoop";
 import { MeshPoly } from "./MeshPoly";
@@ -139,6 +139,18 @@ export class Mesh {
   }
   get totloop() {
     return mesh_totloop(this.pointer);
+  }
+
+  get name() {
+    var tmp: string;
+    // #########################
+    if (this.pointer == 0) {
+      return undefined;
+    }
+    // will be something like 'MECube'
+    tmp = _mesh_get_name(this.pointer);
+    tmp = tmp.slice(2); // remove 'ME'
+    return tmp;
   }
 
   describe() {
