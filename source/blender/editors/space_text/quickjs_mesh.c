@@ -269,6 +269,17 @@ JSValue quickjsfunc_mesh_get_vertid_flag(JSContext *ctx, JSValueConst this_val, 
   //mesh->totselect
 }
 
+JSValue quickjsfunc_mesh_get_vertid_bweight(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+  struct Mesh *mesh = NULL;
+  int vertid        = 0;
+  // #########################
+  if ( ! stackGetParams("pi", &mesh, &vertid)) {
+    js_printf(__FUNCTION__ "> wrong arguments, expecting two arguments (mesh pointer, vertid)\n");
+    return JS_FALSE;
+  }
+  return JS_NewInt32(quickjs_ctx, mesh->mvert[vertid].bweight);
+}
+
 JSValue quickjsfunc_mesh_get_mselect(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
   struct Mesh *mesh = NULL;
   // #########################
@@ -844,34 +855,36 @@ void quickjs_funcs_mesh() {
   int polyid = 1;
   int name = 1;
   int newValue = 1;
-  quickjs_add_function("mesh_add"                  , quickjsfunc_mesh_add                 , none                    );
-  quickjs_add_function("mesh_rna_print"            , quickjsfunc_mesh_rna_print           , none                    );
-  quickjs_add_function("mesh_from_buffers"         , quickjsfunc_mesh_from_buffers        , 3);
-  quickjs_add_function("mesh_set_vertid_xyz"       , quickjsfunc_mesh_set_vertid_xyz      , 4); // mvert
-  quickjs_add_function("mesh_get_vertid_xyz"       , quickjsfunc_mesh_get_vertid_xyz      , 3); // mvert
-  quickjs_add_function("mesh_set_loopid_ev"        , quickjsfunc_mesh_set_loopid_ev       , 4); // mloop     
-  quickjs_add_function("mesh_get_loopid_ev"        , quickjsfunc_mesh_get_loopid_ev       , 3); // mloop     
-  quickjs_add_function("mesh_set_edgeid_v1"        , quickjsfunc_mesh_set_edgeid_v1       , 3); // medge
-  quickjs_add_function("mesh_get_edgeid_v1"        , quickjsfunc_mesh_get_edgeid_v1       , 2); // medge
-  quickjs_add_function("mesh_set_edgeid_v2"        , quickjsfunc_mesh_set_edgeid_v2       , 3); // medge
-  quickjs_add_function("mesh_get_edgeid_v2"        , quickjsfunc_mesh_get_edgeid_v2       , 2); // medge
-  quickjs_add_function("mesh_set_polyid_loopstart" , quickjsfunc_mesh_set_polyid_loopstart, mesh + polyid + newValue);
-  quickjs_add_function("mesh_get_polyid_loopstart" , quickjsfunc_mesh_get_polyid_loopstart, mesh + polyid           );
-  quickjs_add_function("mesh_set_polyid_totloop"   , quickjsfunc_mesh_set_polyid_totloop  , mesh + polyid + newValue);
-  quickjs_add_function("mesh_get_polyid_totloop"   , quickjsfunc_mesh_get_polyid_totloop  , mesh + polyid           );
-  quickjs_add_function("mesh_set_polyid_mat_nr"    , quickjsfunc_mesh_set_polyid_mat_nr   , mesh + polyid + newValue);
-  quickjs_add_function("mesh_get_polyid_mat_nr"    , quickjsfunc_mesh_get_polyid_mat_nr   , mesh + polyid           );
-  quickjs_add_function("mesh_set_polyid_flag"      , quickjsfunc_mesh_set_polyid_flag     , mesh + polyid + newValue);
-  quickjs_add_function("mesh_get_polyid_flag"      , quickjsfunc_mesh_get_polyid_flag     , mesh + polyid           );
-  quickjs_add_function("mesh_update"               , quickjsfunc_mesh_update              , mesh                    );
-  quickjs_add_function("mesh_totvert"              , quickjsfunc_mesh_totvert             , mesh                    );
-  quickjs_add_function("mesh_totedge"              , quickjsfunc_mesh_totedge             , mesh                    );
-  quickjs_add_function("mesh_totface"              , quickjsfunc_mesh_totface             , mesh                    );
-  quickjs_add_function("mesh_totselect"            , quickjsfunc_mesh_totselect           , mesh                    );
-  quickjs_add_function("mesh_totpoly"              , quickjsfunc_mesh_totpoly             , mesh                    );
-  quickjs_add_function("mesh_totloop"              , quickjsfunc_mesh_totloop             , mesh                    );
-  quickjs_add_function("mesh_rna_vertex_color_new" , quickjsfunc_mesh_rna_vertex_color_new, mesh + name             );
-  quickjs_add_function("_mesh_get_mselect"         , quickjsfunc_mesh_get_mselect         , mesh                    );
-  quickjs_add_function("_mesh_get_symmetry"        , quickjsfunc_mesh_get_symmetry        , mesh                    );
-  quickjs_add_function("_mesh_get_name"            , quickjsfunc_mesh_get_name            , mesh                    );
+  quickjs_add_function("_mesh_add"                  , quickjsfunc_mesh_add                 , none                    );
+  quickjs_add_function("_mesh_rna_print"            , quickjsfunc_mesh_rna_print           , none                    );
+  quickjs_add_function("_mesh_from_buffers"         , quickjsfunc_mesh_from_buffers        , 3                       );
+  quickjs_add_function("_mesh_set_vertid_xyz"       , quickjsfunc_mesh_set_vertid_xyz      , 4                       );
+  quickjs_add_function("_mesh_get_vertid_xyz"       , quickjsfunc_mesh_get_vertid_xyz      , 3                       );
+  quickjs_add_function("_mesh_get_vertid_flag"      , quickjsfunc_mesh_get_vertid_flag     , mesh + vertid           );
+  quickjs_add_function("_mesh_get_vertid_bweight"   , quickjsfunc_mesh_get_vertid_bweight  , mesh + vertid           );
+  quickjs_add_function("_mesh_set_loopid_ev"        , quickjsfunc_mesh_set_loopid_ev       , 4                       );
+  quickjs_add_function("_mesh_get_loopid_ev"        , quickjsfunc_mesh_get_loopid_ev       , 3                       );
+  quickjs_add_function("_mesh_set_edgeid_v1"        , quickjsfunc_mesh_set_edgeid_v1       , mesh + edgeid + newValue);
+  quickjs_add_function("_mesh_get_edgeid_v1"        , quickjsfunc_mesh_get_edgeid_v1       , mesh + edgeid           );
+  quickjs_add_function("_mesh_set_edgeid_v2"        , quickjsfunc_mesh_set_edgeid_v2       , mesh + edgeid + newValue);
+  quickjs_add_function("_mesh_get_edgeid_v2"        , quickjsfunc_mesh_get_edgeid_v2       , mesh + edgeid           );
+  quickjs_add_function("_mesh_set_polyid_loopstart" , quickjsfunc_mesh_set_polyid_loopstart, mesh + polyid + newValue);
+  quickjs_add_function("_mesh_get_polyid_loopstart" , quickjsfunc_mesh_get_polyid_loopstart, mesh + polyid           );
+  quickjs_add_function("_mesh_set_polyid_totloop"   , quickjsfunc_mesh_set_polyid_totloop  , mesh + polyid + newValue);
+  quickjs_add_function("_mesh_get_polyid_totloop"   , quickjsfunc_mesh_get_polyid_totloop  , mesh + polyid           );
+  quickjs_add_function("_mesh_set_polyid_mat_nr"    , quickjsfunc_mesh_set_polyid_mat_nr   , mesh + polyid + newValue);
+  quickjs_add_function("_mesh_get_polyid_mat_nr"    , quickjsfunc_mesh_get_polyid_mat_nr   , mesh + polyid           );
+  quickjs_add_function("_mesh_set_polyid_flag"      , quickjsfunc_mesh_set_polyid_flag     , mesh + polyid + newValue);
+  quickjs_add_function("_mesh_get_polyid_flag"      , quickjsfunc_mesh_get_polyid_flag     , mesh + polyid           );
+  quickjs_add_function("_mesh_update"               , quickjsfunc_mesh_update              , mesh                    );
+  quickjs_add_function("_mesh_totvert"              , quickjsfunc_mesh_totvert             , mesh                    );
+  quickjs_add_function("_mesh_totedge"              , quickjsfunc_mesh_totedge             , mesh                    );
+  quickjs_add_function("_mesh_totface"              , quickjsfunc_mesh_totface             , mesh                    );
+  quickjs_add_function("_mesh_totselect"            , quickjsfunc_mesh_totselect           , mesh                    );
+  quickjs_add_function("_mesh_totpoly"              , quickjsfunc_mesh_totpoly             , mesh                    );
+  quickjs_add_function("_mesh_totloop"              , quickjsfunc_mesh_totloop             , mesh                    );
+  quickjs_add_function("_mesh_rna_vertex_color_new" , quickjsfunc_mesh_rna_vertex_color_new, mesh + name             );
+  quickjs_add_function("_mesh_get_mselect"          , quickjsfunc_mesh_get_mselect         , mesh                    );
+  quickjs_add_function("_mesh_get_symmetry"         , quickjsfunc_mesh_get_symmetry        , mesh                    );
+  quickjs_add_function("_mesh_get_name"             , quickjsfunc_mesh_get_name            , mesh                    );
 }

@@ -9,7 +9,12 @@
  * ```
  */
 
-import { mesh_get_edgeid_v1, mesh_get_edgeid_v2, mesh_set_edgeid_v1, mesh_set_edgeid_v2 } from "./blenja";
+import {
+  _mesh_get_edgeid_v1,
+  _mesh_get_edgeid_v2,
+  _mesh_set_edgeid_v1,
+  _mesh_set_edgeid_v2
+} from "./blenja";
 import { Mesh } from "./Mesh";
 
 export class MeshEdge {
@@ -17,10 +22,10 @@ export class MeshEdge {
     // nothing yet
   }
 
-  get v1(     ) { return mesh_get_edgeid_v1(this.mesh.pointer, this.i       ); }
-  get v2(     ) { return mesh_get_edgeid_v2(this.mesh.pointer, this.i       ); }
-  set v1(value) {        mesh_set_edgeid_v1(this.mesh.pointer, this.i, value); }
-  set v2(value) {        mesh_set_edgeid_v2(this.mesh.pointer, this.i, value); }
+  get v1(     ) { return _mesh_get_edgeid_v1(this.mesh.pointer, this.i       ); }
+  get v2(     ) { return _mesh_get_edgeid_v2(this.mesh.pointer, this.i       ); }
+  set v1(value) {        _mesh_set_edgeid_v1(this.mesh.pointer, this.i, value); }
+  set v2(value) {        _mesh_set_edgeid_v2(this.mesh.pointer, this.i, value); }
 
   toString() {
     var tmp: string;

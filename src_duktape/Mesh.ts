@@ -1,5 +1,21 @@
 
-import { mesh_add, mesh_from_buffers, mesh_rna_print, mesh_rna_vertex_color_new, mesh_totedge, mesh_totface, mesh_totloop, mesh_totpoly, mesh_totselect, mesh_totvert, mesh_update, Pointer, _mesh_get_name } from "./blenja";
+import {
+  _mesh_add,
+  _mesh_from_buffers,
+  _mesh_rna_print,
+  _mesh_rna_vertex_color_new,
+  _mesh_totedge,
+  _mesh_totface,
+  _mesh_totloop,
+  _mesh_totpoly,
+  _mesh_totselect,
+  _mesh_totvert,
+  _mesh_update,
+  _mesh_get_mselect,
+  _mesh_get_name,
+  _mesh_get_symmetry,
+  Pointer,
+} from "./blenja";
 import { MeshEdge } from "./MeshEdge";
 import { MeshLoop } from "./MeshLoop";
 import { MeshPoly } from "./MeshPoly";
@@ -27,7 +43,7 @@ import { MeshVertex } from "./MeshVertex";
  *   selectedObject().mesh.describe();
  * ```
  * 
- * @todo mesh_get_name/mesh_set_name for mesh.name
+ * @todo _mesh_get_name/mesh_set_name for mesh.name
  * 
  */
 
@@ -40,7 +56,7 @@ export class Mesh {
   polygons: MeshPoly  [] = [];
 
   constructor() {
-    this.pointer = mesh_add();
+    this.pointer = _mesh_add();
     this.initVertices();
     this.initLoops();
     this.initEdges();
@@ -66,12 +82,12 @@ export class Mesh {
   static fromBuffers(vertices: Float32Array, loops: Int32Array, polygons: Int32Array) {
     var meshPointer: Pointer;
     // #########################
-    meshPointer = mesh_from_buffers(vertices, loops, polygons);
+    meshPointer = _mesh_from_buffers(vertices, loops, polygons);
     return Mesh.fromPointer(meshPointer);
   }
 
   static printRNA() {
-    mesh_rna_print();
+    _mesh_rna_print();
   }
 
   initVertices() {
@@ -119,26 +135,26 @@ export class Mesh {
   }
 
   update() {
-    mesh_update(this.pointer);
+    _mesh_update(this.pointer);
   }
 
   get totvert() {
-    return mesh_totvert(this.pointer);
+    return _mesh_totvert(this.pointer);
   }
   get totedge() {
-    return mesh_totedge(this.pointer);
+    return _mesh_totedge(this.pointer);
   }
   get totface() {
-    return mesh_totface(this.pointer);
+    return _mesh_totface(this.pointer);
   }
   get totselect() {
-    return mesh_totselect(this.pointer);
+    return _mesh_totselect(this.pointer);
   }
   get totpoly() {
-    return mesh_totpoly(this.pointer);
+    return _mesh_totpoly(this.pointer);
   }
   get totloop() {
-    return mesh_totloop(this.pointer);
+    return _mesh_totloop(this.pointer);
   }
 
   get name() {
@@ -151,6 +167,20 @@ export class Mesh {
     tmp = _mesh_get_name(this.pointer);
     tmp = tmp.slice(2); // remove 'ME'
     return tmp;
+  }
+
+  get symmetry() {
+    if (this.pointer == 0) {
+      return undefined;
+    }
+    return _mesh_get_symmetry(this.pointer);
+  }
+
+  get mselect() {
+    if (this.pointer == 0) {
+      return undefined;
+    }
+    return _mesh_get_mselect(this.pointer);
   }
 
   describe() {
@@ -210,6 +240,6 @@ export class Mesh {
   }
 
   rna_vertex_color_new(name: string) {
-    mesh_rna_vertex_color_new(this.pointer, name);
+    _mesh_rna_vertex_color_new(this.pointer, name);
   }
 }

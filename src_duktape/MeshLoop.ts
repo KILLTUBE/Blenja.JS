@@ -8,7 +8,10 @@
  * ```
  */
 
-import { mesh_get_loopid_ev, mesh_set_loopid_ev } from "./blenja";
+import {
+  _mesh_get_loopid_ev,
+  _mesh_set_loopid_ev
+} from "./blenja";
 import { Mesh } from "./Mesh";
 
 export class MeshLoop {
@@ -16,10 +19,10 @@ export class MeshLoop {
     // nothing yet
   }
 
-  get e(     ) { return mesh_get_loopid_ev(this.mesh.pointer, this.i, 0       ); }
-  get v(     ) { return mesh_get_loopid_ev(this.mesh.pointer, this.i, 1       ); }
-  set e(value) {        mesh_set_loopid_ev(this.mesh.pointer, this.i, 0, value); }
-  set v(value) {        mesh_set_loopid_ev(this.mesh.pointer, this.i, 1, value); }
+  get e(     ) { return _mesh_get_loopid_ev(this.mesh.pointer, this.i, 0       ); }
+  get v(     ) { return _mesh_get_loopid_ev(this.mesh.pointer, this.i, 1       ); }
+  set e(value) {        _mesh_set_loopid_ev(this.mesh.pointer, this.i, 0, value); }
+  set v(value) {        _mesh_set_loopid_ev(this.mesh.pointer, this.i, 1, value); }
 
   toString() {
     var tmp: string;
